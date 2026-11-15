@@ -1,0 +1,138 @@
+{
+  "project": "InterviewGenie AI",
+  "version": "1.0.0",
+  "last_updated": "2026-11-15T09:10:00Z",
+  "orchestrator": "Master Orchestrator (CTO)",
+  "phases": {
+    "PHASE_0": { "name": "Environment Discovery", "status": "COMPLETED" },
+    "PHASE_1": { "name": "Architecture & Contracts", "status": "COMPLETED" },
+    "PHASE_2": { "name": "Foundations & Parallel Subsystem Development", "status": "IN_PROGRESS" },
+    "PHASE_3": { "name": "Vertical Slice (Interactive HR Voice Interview)", "status": "READY" },
+    "PHASE_4": { "name": "Multi-Agent Expansion (Tech, Aptitude, Resume, Adaptive)", "status": "BACKLOG" },
+    "PHASE_5": { "name": "Comprehensive Polish & Analytics", "status": "BACKLOG" },
+    "PHASE_6": { "name": "Final QA, Security & Academic Deliverables", "status": "BACKLOG" }
+  },
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "owner": "Frontend Engineer",
+      "phase": "PHASE_2",
+      "title": "Frontend Foundation, Design System & App Shell",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "branch": "feature/frontend-foundation",
+      "dependencies": [],
+      "allowed_files": ["frontend/*"],
+      "deliverables": [
+        "React + Vite + TypeScript setup",
+        "Tailwind CSS with dark SaaS palette (navy, charcoal, electric-blue)",
+        "App layout with Navbar, Sidebar, and Toast notifications",
+        "Navigation structure: Landing, Login/Register, Dashboard, Interview Setup, Interview Room, Technical, Aptitude, Resume, Results, History, Profile",
+        "API service client connecting to backend /api"
+      ],
+      "verification": "npm run build passes with 0 typescript/vite errors"
+    },
+    {
+      "id": "TASK-002",
+      "owner": "Backend Engineer",
+      "phase": "PHASE_2",
+      "title": "Backend FastAPI Foundation, SQLite/SQLAlchemy Models & REST API Core",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "branch": "feature/backend-api",
+      "dependencies": [],
+      "allowed_files": ["backend/*", "requirements.txt"],
+      "deliverables": [
+        "FastAPI app with CORS, exception handlers, and config management",
+        "SQLAlchemy 2.0 database engine and models matching DATABASE_SCHEMA.md",
+        "Pydantic v2 schemas for all requests and responses",
+        "Auth routes (register, login, me) with JWT / password hashing",
+        "Interview session lifecycle endpoints (/api/interviews, start, submit-answer, evaluation)",
+        "Resume PDF text extraction service with PyMuPDF",
+        "Aptitude test question bank and deterministic grading service"
+      ],
+      "verification": "pytest backend/tests passes and FastAPI starts cleanly"
+    },
+    {
+      "id": "TASK-003",
+      "owner": "AI Engineer",
+      "phase": "PHASE_2",
+      "title": "AI Engine Multi-Agent System & Gemini Integration",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "branch": "feature/ai-engine",
+      "dependencies": [],
+      "allowed_files": ["ai_engine/*"],
+      "deliverables": [
+        "Gemini API client with structured JSON output enforcement",
+        "Robust offline / test mock engine for deterministic testing and no-API-key environments",
+        "HR Interview Agent with STAR-methodology questions and follow-ups",
+        "Technical Interview Agent (Python, Java, DSA, Web, OS, Networks) with code evaluation",
+        "Resume-grounded Interview Agent that extracts skills and generates tailored questions",
+        "Coordinator State Machine governing turn transitions and adaptive difficulty",
+        "Evaluation Agent with transparent multi-dimensional rubrics"
+      ],
+      "verification": "Automated unit tests validating question generation and structured evaluation output"
+    },
+    {
+      "id": "TASK-004",
+      "owner": "Voice & Media Engineer",
+      "phase": "PHASE_2",
+      "title": "Voice, Audio Transcription, Video & Recording Services",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "branch": "feature/media-services",
+      "dependencies": [],
+      "allowed_files": ["media_services/*", "frontend/src/services/media/*"],
+      "deliverables": [
+        "Web Speech API (SpeechRecognition) wrapper with real-time text transcription",
+        "SpeechSynthesis (TTS) natural voice engine with voice selection and rate control",
+        "Camera & mic permission guard and real-time device selector",
+        "Consent-gated MediaRecorder audio/video recording service",
+        "Speaker/mic echo cancellation and turn-taking lock (prevents AI TTS from transcribing itself)",
+        "Graceful text-only fallback when Web Speech is unsupported in browser"
+      ],
+      "verification": "Media test harness validating audio turn-taking and fallback modes"
+    },
+    {
+      "id": "TASK-005",
+      "owner": "QA & Security Engineer",
+      "phase": "PHASE_2",
+      "title": "Test Harness, Security Verifications & CI Test Suites",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "branch": "feature/qa-automation",
+      "dependencies": [],
+      "allowed_files": ["tests/*", "pytest.ini"],
+      "deliverables": [
+        "Pytest configuration and backend API test suite",
+        "AI engine deterministic verification tests",
+        "Input sanitization, SQL injection prevention, and file upload validation tests",
+        "Automated end-to-end integration scenario (Session creation -> Voice Q&A -> Evaluation)",
+        "QA test run summary report"
+      ],
+      "verification": "All automated tests executed with exit code 0"
+    },
+    {
+      "id": "TASK-006",
+      "owner": "Research & Documentation Engineer",
+      "phase": "PHASE_2",
+      "title": "Academic Project Documentation, Research Gap & Architecture",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "branch": "feature/academic-research",
+      "dependencies": [],
+      "allowed_files": ["docs/*", "README.md"],
+      "deliverables": [
+        "Comprehensive academic project report (IEEE/ACM style structure)",
+        "Problem Statement, Objectives, and Research Gap analysis",
+        "PEAS (Performance, Environment, Actuators, Sensors) framework breakdown",
+        "Multi-Agent Architecture specifications and interaction sequence diagrams",
+        "Literature review with verifiable references",
+        "Responsible AI, bias mitigation, and candidate privacy considerations",
+        "Polished README.md with architecture overview and installation guide"
+      ],
+      "verification": "Complete, verifiable Markdown documentation in docs/"
+    }
+  ]
+}
