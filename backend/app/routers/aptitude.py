@@ -141,7 +141,7 @@ def submit_aptitude_test(
             user_choice = normalized_answers.get(q_id.replace("apt_", ""))
 
         is_correct = bool(
-            user_choice and user_choice.strip().upper() == q_data["correct_option"].strip().upper()
+            user_choice and isinstance(user_choice, str) and user_choice.strip().upper() == q_data["correct_option"].strip().upper()
         )
         if is_correct:
             correct_count += 1
@@ -169,11 +169,13 @@ def submit_aptitude_test(
         cat: round((data["correct"] / data["total"]) * 100.0, 1)
         for cat, data in category_stats.items()
     }
+    percentile = round(min(99.0, max(5.0, score_pct * 0.9 + 5.0)), 1) if score_pct > 0 else 5.0
 
     return AptitudeSubmitResponse(
         total_questions=total,
         correct_count=correct_count,
         score_percentage=score_pct,
         category_scores=category_scores,
-        results=results
+        results=results,
+        percentile=percentile
     )
