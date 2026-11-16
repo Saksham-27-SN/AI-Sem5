@@ -1,0 +1,281 @@
+{
+  "project": "InterviewGenie-AI",
+  "version": "1.0.0",
+  "generated_at": "2026-11-15T11:50:30Z",
+  "qa_engineer": "qa_dev",
+  "overall_status": "PASSED",
+  "summary": {
+    "total_tests": 86,
+    "passed": 86,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "pass_rate_percent": 100.0,
+    "execution_time_seconds": 17.83,
+    "statement_coverage_percent": 89.22,
+    "covered_lines": 1639,
+    "total_statements": 1837,
+    "missing_lines": 198
+  },
+  "test_suites": [
+    {
+      "file": "tests/test_analytics.py",
+      "test_count": 6,
+      "passed": 6,
+      "failed": 0,
+      "pass_rate_percent": 100.0,
+      "description": "Comprehensive validation of /api/analytics endpoint, unauthenticated & forged JWT rejection, empty baseline state, in-progress state handling, aggregate score calculations, score progression curves, round comparisons, competency radar metrics, and cross-candidate tenant data isolation.",
+      "tests": [
+        "test_analytics_unauthenticated_rejected",
+        "test_analytics_invalid_token_rejected",
+        "test_analytics_empty_state_for_new_user",
+        "test_analytics_in_progress_interviews",
+        "test_analytics_with_completed_interviews",
+        "test_analytics_user_isolation"
+      ]
+    },
+    {
+      "file": "tests/test_security_sanitization.py",
+      "test_count": 18,
+      "passed": 18,
+      "failed": 0,
+      "pass_rate_percent": 100.0,
+      "description": "Exhaustive security and input sanitization test suite validating SQL injection prevention across auth and profile endpoints, OWASP XSS sanitization, PDF file upload validation (non-PDF and >10MB rejection), and JWT tampering resilience.",
+      "tests": [
+        "test_sql_injection_login_bypass_prevention",
+        "test_sql_injection_registration_prevention",
+        "test_sql_injection_profile_update_prevention",
+        "test_sql_injection_interview_path_and_query_parameters",
+        "test_xss_sanitization_unit_vectors",
+        "test_xss_sanitization_in_profile_update",
+        "test_xss_sanitization_in_user_registration",
+        "test_xss_sanitization_in_interview_answer",
+        "test_file_upload_rejects_non_pdf_extensions",
+        "test_file_upload_rejects_files_larger_than_10mb",
+        "test_file_upload_accepts_valid_pdf_under_10mb",
+        "test_file_upload_unauthenticated_rejected",
+        "test_jwt_tampered_signature_rejected",
+        "test_jwt_tampered_payload_rejected",
+        "test_jwt_expired_token_rejected",
+        "test_jwt_wrong_secret_signature_rejected",
+        "test_jwt_none_algorithm_attack_rejected",
+        "test_jwt_malformed_tokens_rejected"
+      ]
+    },
+    {
+      "file": "tests/test_ai_engine.py",
+      "test_count": 26,
+      "passed": 26,
+      "failed": 0,
+      "pass_rate_percent": 100.0,
+      "description": "Multi-agent engine deterministic unit tests covering base agents, Gemini client offline fallback & rate-limit resilience, HR STAR scoring, Technical agent multi-domain code evaluation, Aptitude zero-leak MCQs, Resume grounded question generation, and Coordinator state transitions.",
+      "tests": [
+        "test_base_agent_clean_json_response_variations",
+        "test_base_agent_safe_float",
+        "test_gemini_client_offline_fallback_structured_json",
+        "test_gemini_client_code_assessment_fallback",
+        "test_gemini_client_answer_evaluation_fallback_quality_sensitive",
+        "test_gemini_client_rate_limit_resilience",
+        "test_hr_agent_star_methodology_scoring",
+        "test_hr_agent_evaluation_and_follow_up",
+        "test_technical_agent_all_domains_and_difficulties[Python]",
+        "test_technical_agent_all_domains_and_difficulties[Java]",
+        "test_technical_agent_all_domains_and_difficulties[DSA]",
+        "test_technical_agent_all_domains_and_difficulties[DBMS]",
+        "test_technical_agent_all_domains_and_difficulties[OS]",
+        "test_technical_agent_all_domains_and_difficulties[Networks]",
+        "test_technical_agent_all_domains_and_difficulties[Web Dev]",
+        "test_technical_agent_all_domains_and_difficulties[AI/ML]",
+        "test_technical_agent_domain_alias_normalization",
+        "test_technical_agent_assess_code_empty_and_valid",
+        "test_aptitude_agent_zero_leak_and_single_question",
+        "test_aptitude_agent_grade_single_answer",
+        "test_resume_agent_extraction_and_grounding",
+        "test_coordinator_agent_state_machine_difficulty_adaptation",
+        "test_coordinator_agent_multi_turn_lifecycle",
+        "test_coordinator_agent_aptitude_turn",
+        "test_evaluation_agent_deterministic_rubric_aggregation",
+        "test_evaluation_agent_empty_and_null_evaluations"
+      ]
+    },
+    {
+      "file": "tests/test_domain_validation.py",
+      "test_count": 14,
+      "passed": 14,
+      "failed": 0,
+      "pass_rate_percent": 100.0,
+      "description": "Cross-domain technical validations (Python, Java, DSA, OS), STAR methodology criteria, MCQ deterministic scoring, grounded resume questions, and full end-to-end interview turns across all 6 technical domains.",
+      "tests": [
+        "test_hr_agent_json_structure_and_difficulty",
+        "test_technical_agent_python_validation",
+        "test_technical_agent_java_validation",
+        "test_technical_agent_dsa_validation",
+        "test_technical_agent_os_validation",
+        "test_aptitude_agent_json_structure_and_grading",
+        "test_resume_agent_json_structure_and_grounding",
+        "test_coordinator_difficulty_adaptation_matrix",
+        "test_e2e_interview_turn_across_all_domains[domain_config0]",
+        "test_e2e_interview_turn_across_all_domains[domain_config1]",
+        "test_e2e_interview_turn_across_all_domains[domain_config2]",
+        "test_e2e_interview_turn_across_all_domains[domain_config3]",
+        "test_e2e_interview_turn_across_all_domains[domain_config4]",
+        "test_e2e_interview_turn_across_all_domains[domain_config5]"
+      ]
+    },
+    {
+      "file": "tests/test_auth.py",
+      "test_count": 8,
+      "passed": 8,
+      "failed": 0,
+      "pass_rate_percent": 100.0,
+      "description": "User registration, duplicate email rejection, PBKDF2 password hashing verification, JWT token issuance, authenticated /me access, and unauthorized rejection.",
+      "tests": [
+        "test_user_registration_success",
+        "test_duplicate_email_registration_rejection",
+        "test_user_login_success",
+        "test_user_login_invalid_password",
+        "test_user_login_nonexistent_email",
+        "test_authenticated_me_access",
+        "test_unauthenticated_me_access_rejected",
+        "test_password_hashing_security"
+      ]
+    },
+    {
+      "file": "tests/test_interviews.py",
+      "test_count": 6,
+      "passed": 6,
+      "failed": 0,
+      "pass_rate_percent": 100.0,
+      "description": "Interview session lifecycle (configured -> in_progress -> completed), question progression, answer evaluation, rubric score computation, PDF report generation, and multi-tenant data boundary isolation.",
+      "tests": [
+        "test_interview_session_creation",
+        "test_interview_state_transition_and_lifecycle",
+        "test_end_interview_early",
+        "test_evaluation_report_and_pdf_generation",
+        "test_list_interviews",
+        "test_cross_tenant_interview_isolation"
+      ]
+    },
+    {
+      "file": "tests/test_backend.py",
+      "test_count": 5,
+      "passed": 5,
+      "failed": 0,
+      "pass_rate_percent": 100.0,
+      "description": "FastAPI health check endpoints, CORS origin readiness, candidate profile updates, aptitude test flow with deterministic grading, and media recording consent compliance.",
+      "tests": [
+        "test_health_endpoints",
+        "test_auth_and_profile_flow",
+        "test_aptitude_flow",
+        "test_media_and_consent_flow",
+        "test_interview_session_and_evaluation_flow"
+      ]
+    },
+    {
+      "file": "tests/test_media_services.py",
+      "test_count": 3,
+      "passed": 3,
+      "failed": 0,
+      "pass_rate_percent": 100.0,
+      "description": "Media recording manager consent gates, speech transcript metrics (WPM, filler words), and GDPR Article 17 recording purge lifecycle.",
+      "tests": [
+        "test_recording_manager_consent_gate",
+        "test_audio_processor_metrics",
+        "test_media_storage_lifecycle"
+      ]
+    }
+  ],
+  "security_verifications": {
+    "sql_injection_prevention": {
+      "status": "VERIFIED_SECURE",
+      "findings": "SQL injection payloads in login credentials, user registration, profile career goals, interview session parameters, and query arguments are safely handled via SQLAlchemy 2.0 parameterized queries. No SQL syntax errors, data leakage, or authentication bypasses were observed.",
+      "payload_types_tested": [
+        "Classic boolean-based bypass (' OR '1'='1)",
+        "Inline comment authentication bypass (admin' --)",
+        "Destructive DDL attempts (DROP TABLE users; --)",
+        "Malformed query string and path parameter injection (' OR 1=1 --)"
+      ]
+    },
+    "xss_sanitization": {
+      "status": "VERIFIED_SECURE",
+      "findings": "Input sanitization (sanitize_input / sanitize_html) systematically strips dangerous script/iframe/object tags, inline JavaScript event handlers (onerror, onload, onclick), and neutralizes remaining HTML markup with html.escape. Profile updates, candidate names, and interview transcripts are sanitized before persistence and rendering.",
+      "vectors_tested": [
+        "<script>alert('XSS')</script>",
+        "<SCRIPT SRC=http://evil.com/xss.js></SCRIPT>",
+        "<img src=x onerror=alert(document.cookie)>",
+        "<svg onload=alert(1)>",
+        "<iframe src=\"javascript:alert(1)\"></iframe>",
+        "javascript:alert('pwned')",
+        "<body onload=alert('test')>"
+      ]
+    },
+    "file_upload_validation": {
+      "status": "VERIFIED_SECURE",
+      "findings": "The resume upload endpoint (/api/profile/resume/upload) strictly enforces .pdf file extension checks and rejects malicious executable, script, or non-PDF formats with HTTP 400. In addition, an explicit 10MB file size ceiling is enforced, rejecting files exceeding 10 * 1024 * 1024 bytes with HTTP 400.",
+      "scenarios_tested": [
+        "Non-PDF formats (.exe, .sh, .txt, .docx, .png, .py) -> Rejected 400 Bad Request",
+        "Double-extension obfuscation (.pdf.exe) -> Rejected 400 Bad Request",
+        "Oversized files (>10MB, e.g. 10.5MB) -> Rejected 400 Bad Request with size error",
+        "Valid PDF files (<10MB) -> Accepted 200 OK with extracted skill metadata",
+        "Unauthenticated upload attempts -> Rejected 401 Unauthorized"
+      ]
+    },
+    "jwt_tampering": {
+      "status": "VERIFIED_SECURE",
+      "findings": "The authentication middleware strictly validates JWT signatures using HS256 with HMAC-SHA256 verification. Any signature modification, forged payload (subject ID swap), expired timestamp, unauthorized signing key, 'alg: none' header attack, or malformed Authorization header is immediately rejected with HTTP 401 Unauthorized.",
+      "attack_vectors_tested": [
+        "Tampered signature byte mutation -> 401 Unauthorized",
+        "Tampered payload subject ID swap -> 401 Unauthorized",
+        "Expired token verification -> 401 Unauthorized",
+        "Token signed with unauthorized secret key -> 401 Unauthorized",
+        "Algorithm confusion / alg:none bypass attack -> 401 Unauthorized",
+        "Malformed and non-Bearer headers -> 401 Unauthorized"
+      ]
+    }
+  },
+  "analytics_endpoint_verification": {
+    "endpoint": "/api/analytics",
+    "status": "VERIFIED_OPERATIONAL",
+    "metrics_validated": [
+      "Unauthenticated access returns 401 Unauthorized",
+      "Forged/invalid token returns 401 Unauthorized",
+      "Fresh user with 0 interviews returns baseline schema (0 completed, 0.0 avg score, 'Awaiting Simulation' readiness)",
+      "User with in-progress sessions returns correct total_interviews count and 'In Progress' readiness status",
+      "User with completed sessions computes exact average_score, readiness_score, score_trends, round_averages, strengths, weaknesses, competencies, and round comparisons",
+      "Multi-tenant isolation verified: Candidate A cannot observe Candidate B's analytics data"
+    ]
+  },
+  "coverage_report": {
+    "total_statements": 1837,
+    "covered_statements": 1639,
+    "missing_statements": 198,
+    "overall_coverage_percent": 89.22,
+    "module_breakdown": {
+      "ai_engine/coordinator_agent.py": 98.7,
+      "ai_engine/evaluation_agent.py": 100.0,
+      "ai_engine/base.py": 94.9,
+      "ai_engine/hr_agent.py": 92.5,
+      "ai_engine/aptitude_agent.py": 90.7,
+      "ai_engine/resume_agent.py": 86.5,
+      "ai_engine/gemini_client.py": 79.8,
+      "ai_engine/technical_agent.py": 78.6,
+      "backend/app/models/models.py": 100.0,
+      "backend/app/schemas/schemas.py": 100.0,
+      "backend/app/core/config.py": 100.0,
+      "backend/app/core/database.py": 100.0,
+      "backend/app/core/security.py": 88.7,
+      "backend/app/routers/auth.py": 97.1,
+      "backend/app/routers/interviews.py": 95.9,
+      "backend/app/routers/aptitude.py": 90.6,
+      "backend/app/routers/profile.py": 87.9,
+      "backend/app/routers/analytics.py": 76.3,
+      "backend/app/routers/media.py": 69.3,
+      "backend/app/main.py": 82.4,
+      "backend/app/services/pdf_report_service.py": 100.0,
+      "backend/app/services/resume_service.py": 62.5,
+      "media_services/audio_processor.py": 100.0,
+      "media_services/recording_manager.py": 100.0,
+      "media_services/storage.py": 73.2
+    }
+  }
+}

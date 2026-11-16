@@ -16,6 +16,7 @@ import type {
   AptitudeSubmitResponse,
   MediaConsentPayload,
   MediaConsentResponse,
+  AnalyticsResponse,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -27,7 +28,7 @@ class ApiService {
       headers['Content-Type'] = 'application/json';
     }
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && !token.startsWith('demo_')) {
       headers['Authorization'] = `Bearer ${token}`;
     }
     return headers;
@@ -502,6 +503,139 @@ class ApiService {
       } as unknown as T;
     }
 
+    // Analytics
+    if (endpoint.includes('/analytics')) {
+      const mockAnalytics: AnalyticsResponse = {
+        summary: {
+          total_interviews: 6,
+          average_score: 87.2,
+          highest_score: 93.0,
+          completion_rate: 100.0,
+          total_practice_minutes: 132,
+          readiness_status: 'Senior / Big Tech Ready',
+          readiness_percentage: 88.0,
+        },
+        score_progression: [
+          {
+            session_id: 'int_demo_01',
+            session_number: 1,
+            date: 'Nov 04',
+            interview_type: 'hr',
+            role: 'Full Stack Engineer',
+            overall_score: 74.0,
+            technical_score: 71.0,
+            communication_score: 78.0,
+            problem_solving_score: 73.0,
+          },
+          {
+            session_id: 'int_demo_02',
+            session_number: 2,
+            date: 'Nov 07',
+            interview_type: 'aptitude',
+            role: 'Software Engineer',
+            overall_score: 80.0,
+            technical_score: 82.0,
+            communication_score: 76.0,
+            problem_solving_score: 82.0,
+          },
+          {
+            session_id: 'int_demo_03',
+            session_number: 3,
+            date: 'Nov 10',
+            interview_type: 'technical',
+            role: 'Senior Backend Engineer',
+            overall_score: 82.0,
+            technical_score: 84.0,
+            communication_score: 80.0,
+            problem_solving_score: 82.0,
+          },
+          {
+            session_id: 'int_demo_04',
+            session_number: 4,
+            date: 'Nov 12',
+            interview_type: 'resume',
+            role: 'Lead Cloud Architect',
+            overall_score: 86.0,
+            technical_score: 87.0,
+            communication_score: 85.0,
+            problem_solving_score: 86.0,
+          },
+          {
+            session_id: 'int_demo_05',
+            session_number: 5,
+            date: 'Nov 13',
+            interview_type: 'hr',
+            role: 'Staff Software Engineer',
+            overall_score: 88.5,
+            technical_score: 88.0,
+            communication_score: 90.0,
+            problem_solving_score: 87.5,
+          },
+          {
+            session_id: 'int_demo_06',
+            session_number: 6,
+            date: 'Nov 14',
+            interview_type: 'aptitude',
+            role: 'Full Stack Engineer',
+            overall_score: 93.0,
+            technical_score: 94.0,
+            communication_score: 88.0,
+            problem_solving_score: 95.0,
+          },
+        ],
+        round_comparison: [
+          {
+            round: 'HR & Behavioral',
+            interview_type: 'hr',
+            average_score: 88.5,
+            sessions_count: 2,
+            benchmark: 75.0,
+          },
+          {
+            round: 'Technical & Coding',
+            interview_type: 'technical',
+            average_score: 82.0,
+            sessions_count: 2,
+            benchmark: 72.0,
+          },
+          {
+            round: 'Aptitude & Logic',
+            interview_type: 'aptitude',
+            average_score: 91.0,
+            sessions_count: 2,
+            benchmark: 70.0,
+          },
+          {
+            round: 'Resume Deep Dive',
+            interview_type: 'resume',
+            average_score: 86.0,
+            sessions_count: 1,
+            benchmark: 74.0,
+          },
+        ],
+        competencies: [
+          { competency: 'Technical Depth', candidate_score: 87.5, benchmark_score: 75.0, full_mark: 100 },
+          { competency: 'Communication Clarity', candidate_score: 89.0, benchmark_score: 78.0, full_mark: 100 },
+          { competency: 'STAR Structure', candidate_score: 86.5, benchmark_score: 70.0, full_mark: 100 },
+          { competency: 'Problem Solving', candidate_score: 88.0, benchmark_score: 75.0, full_mark: 100 },
+          { competency: 'Architectural Maturity', candidate_score: 84.0, benchmark_score: 72.0, full_mark: 100 },
+          { competency: 'Cadence & Composure', candidate_score: 90.0, benchmark_score: 74.0, full_mark: 100 },
+        ],
+        strengths: [
+          'Exemplary STAR formulation with clear quantifiable business metrics',
+          'Demonstrated deep architectural maturity regarding microservices and database isolation',
+          'Natural conversational cadence with low filler words (<2 per minute)',
+          'High precision in time and space complexity trade-off analyses',
+        ],
+        weaknesses: [
+          'Incorporate more discussion on distributed tracing and OpenTelemetry telemetry',
+          'Clarify retry backoff policies when discussing queue consumer failures',
+        ],
+        recommended_next_action: 'Practice system design edge-cases in the Technical Room focusing on distributed consensus.',
+      };
+      return mockAnalytics as unknown as T;
+    }
+
     // If nothing matched, throw the original error
     throw originalError;
   }
@@ -635,6 +769,11 @@ class ApiService {
     return this.request(`/media/recordings/${interviewId}`, {
       method: 'DELETE',
     });
+  }
+
+  // Analytics
+  async getAnalytics(): Promise<AnalyticsResponse> {
+    return this.request<AnalyticsResponse>('/analytics');
   }
 }
 

@@ -113,9 +113,10 @@ To solve the systemic bottlenecks identified above, InterviewGenie AI establishe
 ## 6. Document Roadmap
 
 The remainder of this academic documentation suite is structured as follows:
-- **`02_LITERATURE_REVIEW.md`**: Comprehensive survey of state-of-the-art NLP, multi-agent coordination frameworks, and multimodal speech analysis with IEEE/ACM citations.
-- **`03_RESEARCH_GAP.md`**: Detailed comparative gap analysis formalizing the deficiencies of existing market platforms.
-- **`04_PEAS_FRAMEWORK.md`**: Rigorous PEAS (Performance measures, Environment, Actuators, Sensors) characterization of all six agents.
-- **`05_MULTI_AGENT_ARCHITECTURE.md`**: Complete system architecture, finite state machines, and sequence protocols.
-- **`06_RESPONSIBLE_AI_AND_PRIVACY.md`**: Ethical governance, anti-bias verification, and GDPR data sovereignty implementation.
-- **`07_EXPERIMENTAL_RESULTS_AND_EVALUATION.md`**: Latency benchmarks, inter-rater reliability scores, and deterministic test results.
+- [**02_LITERATURE_REVIEW.md**](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/02_LITERATURE_REVIEW.md): Comprehensive survey of state-of-the-art NLP, multi-agent coordination frameworks, and multimodal speech analysis with IEEE/ACM citations.
+- [**03_RESEARCH_GAP.md**](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/03_RESEARCH_GAP.md): Detailed comparative gap analysis formalizing the deficiencies of existing market platforms.
+- [**04_PEAS_FRAMEWORK.md**](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/04_PEAS_FRAMEWORK.md): Rigorous PEAS (Performance measures, Environment, Actuators, Sensors) characterization of all six agents.
+- [**05_MULTI_AGENT_ARCHITECTURE.md**](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/05_MULTI_AGENT_ARCHITECTURE.md): Complete system architecture, finite state machines, and sequence protocols.
+- [**06_RESPONSIBLE_AI_AND_PRIVACY.md**](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/06_RESPONSIBLE_AI_AND_PRIVACY.md): Ethical governance, anti-bias verification, and GDPR data sovereignty implementation.
+- [**07_EXPERIMENTAL_RESULTS_AND_EVALUATION.md**](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/07_EXPERIMENTAL_RESULTS_AND_EVALUATION.md): Latency benchmarks, inter-rater reliability scores, and deterministic test results.
+- [**08_USER_GUIDE_AND_DEMO_SCRIPT.md**](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/08_USER_GUIDE_AND_DEMO_SCRIPT.md): Operational user manual, walkthrough of all interview modes, and minute-by-minute academic viva defense presentation script.

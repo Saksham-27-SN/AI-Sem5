@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "skills": {
+    "fastapi-python": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "fastapi-python/SKILL.md",
+      "computedHash": "dcd375a6d6b3874ad5a11237399a20c851e6b221dee5dd3ad52a7d67bb3e53e8"
+    },
+    "python-patterns": {
+      "source": "affaan-m/ECC",
+      "sourceType": "github",
+      "skillPath": "skills/python-patterns/SKILL.md",
+      "computedHash": "2771a46d843b25e27277c1acf10d1748fc75850ad3c2549dea3597db9354b0e6"
+    },
+    "testing": {
+      "source": "grafana/skills",
+      "sourceType": "github",
+      "skillPath": "skills/grafana-cloud/testing/SKILL.md",
+      "computedHash": "6f2bce57816c04afd6ba6e684ac578870bfb91bb183f5f862898b9bae1280bb5"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "computedHash": "ff6863fc7c1be035b294703b2e7c90b2197548985ca4cb98f58740a7e84dc0cc"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "4f68ae07187fb0d1fb78c88b503d089da4cf5a9d9625d1f2e425b1590bf96d92"
+    }
+  }
+}

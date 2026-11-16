@@ -6,6 +6,11 @@ from ai_engine.gemini_client import gemini_client
 class ResumeAgent(BaseAgent):
     """Parses resume text, extracts skills/projects/experience, and generates grounded interview questions."""
 
+    SYSTEM_PROMPT = """You are an expert technical interviewer reviewing resumes.
+STRICT ETHICAL & SAFETY DIRECTIVE:
+You must NEVER evaluate, judge, score, infer, or comment upon candidate physical appearance, facial expressions, attire, background environment, gender, race, age, accent, or emotional state.
+Focus solely on verifiable technical skills, project achievements, and architectural trade-offs."""
+
     COMMON_SKILLS = [
         # Languages
         "Python", "Java", "Go", "Golang", "C++", "C#", "Rust", "JavaScript", "TypeScript",
@@ -31,7 +36,6 @@ class ResumeAgent(BaseAgent):
         # 1. Extract Skills
         extracted_skills = []
         for skill in self.COMMON_SKILLS:
-            # Word boundary matching
             pattern = r'\b' + re.escape(skill.lower()) + r'\b'
             if re.search(pattern, lower_text):
                 extracted_skills.append(skill)
@@ -50,7 +54,7 @@ class ResumeAgent(BaseAgent):
                 exp_level = "mid"
         else:
             if any(term in lower_text for term in ["lead", "architect", "principal", "staff"]):
-                exp_level = "senior"
+                exp_level = "lead/principal" if any(term in lower_text for term in ["principal", "staff"]) else "senior"
             elif any(term in lower_text for term in ["senior", "sr."]):
                 exp_level = "senior"
             elif any(term in lower_text for term in ["intern", "graduate", "student", "junior"]):
@@ -58,13 +62,12 @@ class ResumeAgent(BaseAgent):
 
         # 3. Extract Projects or Action-Driven Accomplishments
         projects = []
-        # Match lines like "Project: ...", "Built ...", "Architected ...", "Designed ...", "Developed ..."
         lines = [line.strip() for line in text.split("\n") if line.strip()]
         for line in lines:
             if re.match(r'^(?:projects?|key projects?)\s*[:\-]', line, re.IGNORECASE):
                 projects.append(line)
             elif re.search(r'\b(developed|architected|built|designed|implemented|deployed)\b', line, re.IGNORECASE):
-                if len(line) > 20 and len(line) < 200:
+                if 20 < len(line) < 200:
                     cleaned_line = re.sub(r'^[•\-\*\d\.\s]+', '', line).strip()
                     if cleaned_line and cleaned_line not in projects:
                         projects.append(cleaned_line)
@@ -108,36 +111,49 @@ class ResumeAgent(BaseAgent):
         difficulty: str = "medium"
     ) -> Dict[str, Any]:
         """Generates an interview question deeply grounded in candidate projects and skills."""
+        diff_clean = (difficulty or "medium").lower().strip()
         target_skill = skills[index % len(skills)] if skills else "System Architecture"
         project_context = f"Project Context: {projects[index % len(projects)]}" if projects else "Project Context: Candidate highlighted scalable backend and production systems."
 
         prompt = f"""Generate a resume-grounded interview question for a candidate.
+STRICT SAFETY DIRECTIVE: Strictly zero evaluation or mention of physical appearance, demographics, or emotion.
 Resume Summary: {resume_summary}
 Skills listed: {', '.join(skills) if skills else 'Software Engineering'}
 Focus Skill/Area: {target_skill}
 {project_context}
-Difficulty: {difficulty}
+Difficulty: {diff_clean}
 
 Target a specific engineering trade-off, architecture decision, performance bottleneck, or failure mode.
 Return JSON format:
 {{
   "question_text": "...",
   "category": "Resume Deep-Dive: {target_skill}",
-  "difficulty": "{difficulty}",
+  "difficulty": "{diff_clean}",
   "expected_criteria": ["...", "..."]
 }}"""
-        raw = gemini_client.generate_content("You are an expert technical interviewer reviewing resumes.", prompt)
+        raw = gemini_client.generate_content(self.SYSTEM_PROMPT, prompt)
         res = self.clean_json_response(raw)
 
         if "question_text" not in res:
             return {
                 "question_text": f"In your experience with {target_skill}, walk me through the most complex architectural bottleneck or scalability challenge you encountered and how you resolved it.",
                 "category": f"Resume Deep-Dive: {target_skill}",
-                "difficulty": difficulty,
+                "difficulty": diff_clean,
                 "expected_criteria": [
                     f"Concrete implementation details using {target_skill}",
                     "Identified performance bottleneck or architectural limitation",
                     "Measurable impact and engineering trade-offs"
                 ]
             }
+
+        if "difficulty" not in res or not res["difficulty"]:
+            res["difficulty"] = diff_clean
+        if "category" not in res or not res["category"]:
+            res["category"] = f"Resume Deep-Dive: {target_skill}"
+        if "expected_criteria" not in res or not isinstance(res["expected_criteria"], list):
+            res["expected_criteria"] = [
+                f"Concrete implementation details using {target_skill}",
+                "Identified performance bottleneck or architectural limitation",
+                "Measurable impact and engineering trade-offs"
+            ]
         return res

@@ -1,0 +1,194 @@
+{
+  "task_id": "QA-LIVE-API-VERIFICATION",
+  "timestamp": "2026-11-15T20:09:56.812380+00:00",
+  "model_configured": "gemini-3.1-flash-lite-preview",
+  "api_key_configured": true,
+  "flows": {
+    "flow_1_hr_interview": {
+      "status": "VERIFIED",
+      "elapsed_seconds": 2.9,
+      "initial_question": {
+        "question": "Tell me about a time when you identified a significant bottleneck or failure in a project that wasn't directly your responsibility. What steps did you take to address it, and how did you navigate the collaboration with the team or individual responsible?",
+        "intent": "Assess problem ownership, cross-functional collaboration, and the ability to influence without direct authority.",
+        "difficulty": "medium",
+        "source": "gemini",
+        "is_fallback": false
+      },
+      "candidate_answer": "In my previous role at CloudScale, I led the architectural migration of a legacy monolithic service to a microservices architecture on Kubernetes. We used ArgoCD for GitOps automated deployments, integrated Prometheus and Grafana for observability, and eliminated deployment downtime completely.",
+      "follow_up_question": {
+        "question": "That sounds like a successful migration, but the previous question specifically asked about a time you identified a bottleneck or failure that was outside your direct responsibility. Could you walk me through a specific instance where you spotted a process or technical failure in a team's workflow, and describe the steps you took to influence the outcome using the STAR method?",
+        "intent": "The candidate provided a technical summary of a project rather than answering the behavioral question about identifying and resolving a bottleneck outside their scope. This follow-up redirects them to provide a structured STAR response focusing on cross-functional collaboration and influence.",
+        "source": "gemini",
+        "is_fallback": false,
+        "is_follow_up": true,
+        "matched_context_keywords": [
+          "migration"
+        ]
+      }
+    },
+    "flow_2_coordinator_adaptation": {
+      "status": "VERIFIED",
+      "elapsed_seconds": 11.79,
+      "session_id": "test_coord_1794773399",
+      "state_machine_verified": true,
+      "adaptation_steps": [
+        {
+          "initial_difficulty": "hard"
+        },
+        {
+          "score": 45.0,
+          "adapted_difficulty": "medium",
+          "rule": "score < 60 demotes hard -> medium"
+        },
+        {
+          "score": 50.0,
+          "adapted_difficulty": "easy",
+          "rule": "score < 60 demotes medium -> easy"
+        },
+        {
+          "score": 85.0,
+          "adapted_difficulty": "medium",
+          "rule": "score >= 80 promotes easy -> medium"
+        },
+        {
+          "score": 70.0,
+          "adapted_difficulty": "medium",
+          "rule": "60 <= score < 80 maintains stable difficulty"
+        }
+      ],
+      "zero_llm_state_transition": true
+    },
+    "flow_3_quiz_generation_grading": {
+      "status": "VERIFIED",
+      "elapsed_seconds": 3.79,
+      "question": {
+        "stem": "A train running at a speed of 60 km/h crosses a pole in 9 seconds. What is the length of the train in meters?",
+        "options": [
+          "120 meters",
+          "150 meters",
+          "180 meters",
+          "200 meters"
+        ],
+        "correct_index": 1,
+        "source": "gemini",
+        "is_fallback": false,
+        "topic": "Quantitative Aptitude",
+        "difficulty": "medium"
+      },
+      "schema_validation": {
+        "four_unique_options": true,
+        "valid_correct_index_range": true,
+        "stem_non_empty": true
+      },
+      "grading_verification": {
+        "correct_submission": {
+          "selected_index": 1,
+          "is_correct": true,
+          "score": 100.0
+        },
+        "incorrect_submission": {
+          "selected_index": 2,
+          "is_correct": false,
+          "score": 0.0
+        },
+        "zero_llm_grading": true
+      }
+    },
+    "flow_4_resume_analysis": {
+      "status": "VERIFIED",
+      "elapsed_seconds": 9.46,
+      "parsed_profile": {
+        "skills": [
+          "Go",
+          "Rust",
+          "Python",
+          "Apache Kafka",
+          "Apache Flink",
+          "Kubernetes",
+          "PostgreSQL",
+          "Raft Consensus",
+          "Docker",
+          "AWS"
+        ],
+        "projects": [
+          "Project ChronoSync",
+          "Project StreamMesh"
+        ]
+      },
+      "grounded_questions": [
+        {
+          "question": "In Project ChronoSync, you implemented a Raft-based replication protocol across three AWS regions; how did you handle the trade-offs between consistency and availability during simulated network partitions, specifically regarding the election timeout and heartbeat intervals to prevent unnecessary leader re-elections?",
+          "source": "gemini",
+          "is_fallback": false,
+          "referenced_item": "Project ChronoSync",
+          "matched_anchors": [
+            "chronosync",
+            "raft",
+            "replication"
+          ]
+        },
+        {
+          "question": "As Principal Architect at Aurora FinTech, you achieved a p99 latency of < 4ms for a risk evaluation engine processing 120,000 tx/sec; what specific architectural patterns or Go-based concurrency primitives did you utilize to minimize garbage collection overhead and lock contention at that scale?",
+          "source": "gemini",
+          "is_fallback": false,
+          "referenced_item": "Principal Architect at Aurora FinTech",
+          "matched_anchors": [
+            "go"
+          ]
+        }
+      ],
+      "grounding_verified": true
+    },
+    "flow_5_rubric_evaluation": {
+      "status": "VERIFIED",
+      "elapsed_seconds": 7.98,
+      "question": "How do you handle schema evolution and backward compatibility in an event-driven microservices architecture using Apache Kafka?",
+      "evaluated_criteria": [
+        {
+          "criterion": "Technical Accuracy",
+          "score": 95.0,
+          "justification": "The candidate correctly identified the use of Confluent Schema Registry and Avro for managing schema evolution."
+        },
+        {
+          "criterion": "Architectural Depth",
+          "score": 90.0,
+          "justification": "The candidate demonstrated a strong understanding of compatibility modes and the necessity of default values for maintaining system stability."
+        },
+        {
+          "criterion": "Communication Clarity",
+          "score": 95.0,
+          "justification": "The response was concise, logically structured, and utilized industry-standard terminology effectively."
+        },
+        {
+          "criterion": "Trade-offs & Edge Cases",
+          "score": 85.0,
+          "justification": "The candidate appropriately addressed breaking changes through topic versioning, though could have elaborated further on the operational overhead of blue-green migrations."
+        }
+      ],
+      "computed_score": 91.8,
+      "double_run_aggregation": {
+        "run_1_overall_score": 91.8,
+        "run_2_overall_score": 91.8,
+        "identical": true,
+        "tier": "Strong Hire",
+        "round_scores": {
+          "technical": 91.8
+        }
+      }
+    },
+    "flow_6_failure_path": {
+      "status": "VERIFIED",
+      "elapsed_seconds": 2.07,
+      "invalid_key_used": "AIzaSy***Verification",
+      "invalid_api_key_error_caught": true,
+      "fallback_question_served": {
+        "question": "Describe a specific situation where a critical production outage or major release risk occurred. What specific steps did you take to resolve it?",
+        "source": "offline_bank",
+        "is_fallback": true,
+        "intent": "Assess incident response, problem ownership, and structured STAR narrative."
+      },
+      "seamless_fallback_verified": true
+    }
+  },
+  "overall_status": "VERIFIED"
+}

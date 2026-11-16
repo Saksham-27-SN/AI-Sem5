@@ -13,6 +13,7 @@ import type {
 
 type StateListener = (state: CameraState) => void;
 type ErrorListener = (error: string) => void;
+type PermissionListener = (status: PermissionStatusSummary) => void;
 
 export class CameraService {
   private stream: MediaStream | null = null;
@@ -29,11 +30,18 @@ export class CameraService {
     error: null,
   };
 
+  private permissions: PermissionStatusSummary = {
+    camera: 'prompt',
+    microphone: 'prompt',
+  };
+
   private stateListeners: Set<StateListener> = new Set();
   private errorListeners: Set<ErrorListener> = new Set();
+  private permissionListeners: Set<PermissionListener> = new Set();
 
   constructor() {
     this.listenToDeviceChanges();
+    this.checkPermissions().catch(() => {});
   }
 
   // ==========================================
@@ -95,8 +103,8 @@ export class CameraService {
 
   public async checkPermissions(): Promise<PermissionStatusSummary> {
     const summary: PermissionStatusSummary = {
-      camera: 'prompt',
-      microphone: 'prompt',
+      camera: this.permissions.camera || 'prompt',
+      microphone: this.permissions.microphone || 'prompt',
     };
 
     if (typeof navigator === 'undefined' || !navigator.permissions?.query) {
@@ -107,6 +115,10 @@ export class CameraService {
       // Query camera permission
       const camQuery = await navigator.permissions.query({ name: 'camera' as unknown as PermissionName });
       summary.camera = camQuery.state;
+      camQuery.onchange = () => {
+        this.permissions.camera = camQuery.state;
+        this.notifyPermissions();
+      };
     } catch {
       // Browser may not support querying camera directly
     }
@@ -115,11 +127,31 @@ export class CameraService {
       // Query microphone permission
       const micQuery = await navigator.permissions.query({ name: 'microphone' as unknown as PermissionName });
       summary.microphone = micQuery.state;
+      micQuery.onchange = () => {
+        this.permissions.microphone = micQuery.state;
+        this.notifyPermissions();
+      };
     } catch {
       // Browser may not support querying microphone directly
     }
 
+    this.permissions = summary;
+    this.notifyPermissions();
     return summary;
+  }
+
+  public getPermissions(): PermissionStatusSummary {
+    return { ...this.permissions };
+  }
+
+  public onPermissionChange(listener: PermissionListener): () => void {
+    this.permissionListeners.add(listener);
+    listener({ ...this.permissions });
+    return () => this.permissionListeners.delete(listener);
+  }
+
+  private notifyPermissions(): void {
+    this.permissionListeners.forEach(listener => listener({ ...this.permissions }));
   }
 
   // ==========================================
@@ -200,6 +232,12 @@ export class CameraService {
       const videoDeviceId = videoTracks[0]?.getSettings().deviceId || this.state.selectedVideoDeviceId;
       const audioDeviceId = audioTracks[0]?.getSettings().deviceId || this.state.selectedAudioDeviceId;
 
+      this.permissions = {
+        camera: 'granted',
+        microphone: 'granted',
+      };
+      this.notifyPermissions();
+
       this.updateState({
         hasStream: true,
         isVideoActive: videoTracks.length > 0 && videoTracks[0].enabled,
@@ -218,6 +256,11 @@ export class CameraService {
 
       if (errorObj.name === 'NotAllowedError' || errorObj.name === 'PermissionDeniedError') {
         friendlyMessage = 'Camera or microphone access was denied. Please grant permission in browser settings.';
+        this.permissions = {
+          camera: 'denied',
+          microphone: 'denied',
+        };
+        this.notifyPermissions();
       } else if (errorObj.name === 'NotFoundError' || errorObj.name === 'DevicesNotFoundError') {
         friendlyMessage = 'No camera or microphone device was found on this system.';
       } else if (errorObj.name === 'NotReadableError' || errorObj.name === 'TrackStartError') {
@@ -381,6 +424,7 @@ export class CameraService {
     this.stopPreview();
     this.stateListeners.clear();
     this.errorListeners.clear();
+    this.permissionListeners.clear();
   }
 }
 

@@ -52,6 +52,51 @@ class ResumeUploadResponse(BaseModel):
     raw_text_length: int
 
 # --- Question & Answer Schemas ---
+class InterviewQuestionSchema(BaseModel):
+    question: str = Field(..., description="The interview question text.")
+    intent: str = Field(..., description="The core intent or competency being tested.")
+    difficulty: str = Field(..., description="Difficulty tier: 'easy' | 'medium' | 'hard'.")
+    expected_points: List[str] = Field(default_factory=list, description="Key expected points for a strong answer.")
+
+class QuizQuestionSchema(BaseModel):
+    stem: str = Field(..., description="The question statement or prompt.")
+    options: List[str] = Field(..., description="Exactly 4 unique options.")
+    correct_index: int = Field(..., description="0-based index of the correct answer (0 <= correct_index < 4).")
+    explanation: str = Field(..., description="Explanation of why the correct option is right.")
+    topic: str = Field(..., description="Topic of the quiz question.")
+    difficulty: str = Field("medium", description="Difficulty tier: 'easy' | 'medium' | 'hard'.")
+
+class ResumeAnalysisSchema(BaseModel):
+    skills: List[str] = Field(default_factory=list)
+    projects: List[Dict[str, Any]] = Field(default_factory=list)
+    experience: List[str] = Field(default_factory=list)
+    education: List[str] = Field(default_factory=list)
+    gaps: List[str] = Field(default_factory=list)
+
+class ResumeQuestionSchema(BaseModel):
+    question: str
+    referenced_item: str
+    intent: str
+    difficulty: str = "medium"
+
+class CriterionEvaluationSchema(BaseModel):
+    criterion_name: str
+    score: float
+    max_score: float = 100.0
+    justification: str
+
+class AnswerEvaluationSchema(BaseModel):
+    criteria: List[CriterionEvaluationSchema]
+    strengths: List[str] = Field(default_factory=list)
+    improvements: List[str] = Field(default_factory=list)
+
+class EvaluationReportSchema(BaseModel):
+    round_scores: Dict[str, float]
+    overall_score: float
+    tier: str
+    feedback_summary: str
+    improvement_plan: List[str] = Field(default_factory=list)
+
 class QuestionResponse(BaseModel):
     id: str
     order_index: int
@@ -140,6 +185,34 @@ class EvaluationReportResponse(BaseModel):
     improvement_plan: List[ImprovementItem]
     pdf_report_url: Optional[str] = None
 
+# --- Transcript Schemas ---
+class TranscriptTurn(BaseModel):
+    order_index: int
+    round_type: str
+    category: Optional[str] = None
+    question_text: str
+    answer_text: Optional[str] = None
+    evaluation_score: Optional[float] = None
+    duration_seconds: Optional[int] = 0
+    words_per_minute: Optional[float] = None
+    is_follow_up: bool = False
+    created_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class InterviewTranscriptResponse(BaseModel):
+    interview_id: str
+    target_role: str
+    domain: str
+    interview_type: str
+    status: str
+    total_questions: int
+    transcript_text: str
+    dialogue: List[TranscriptTurn]
+    dialogue_json: List[Dict[str, Any]] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
 # --- Aptitude Schemas ---
 class AptitudeMCQ(BaseModel):
     id: str
@@ -178,3 +251,75 @@ class MediaConsentResponse(BaseModel):
     interview_id: Optional[str] = None
     has_recording_consent: bool
     consent_given_at: Optional[datetime] = None
+
+class MediaCleanupResponse(BaseModel):
+    status: str
+    message: str
+    purged_sessions_cleaned: int = 0
+    orphaned_files_removed: int = 0
+    freed_bytes: int = 0
+    freed_mb: float = 0.0
+
+    model_config = ConfigDict(from_attributes=True)
+
+# --- Analytics Schemas ---
+class ScoreTrendItem(BaseModel):
+    date: str
+    score: float
+    interview_type: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ScoreProgressionPoint(BaseModel):
+    session_id: str
+    session_number: int
+    date: str
+    interview_type: str
+    role: str
+    overall_score: float
+    technical_score: Optional[float] = None
+    communication_score: Optional[float] = None
+    problem_solving_score: Optional[float] = None
+
+class RoundComparisonItem(BaseModel):
+    round: str
+    interview_type: str
+    average_score: float
+    sessions_count: int
+    benchmark: float
+
+class CompetencyRadarItem(BaseModel):
+    competency: str
+    candidate_score: float
+    benchmark_score: float
+    full_mark: float = 100.0
+
+class AnalyticsSummary(BaseModel):
+    total_interviews: int
+    average_score: float
+    highest_score: float
+    completion_rate: float
+    total_practice_minutes: int
+    readiness_status: str
+    readiness_percentage: float
+
+class AnalyticsResponse(BaseModel):
+    total_interviews_completed: int = 0
+    average_score: float = 0.0
+    readiness_score: float = Field(default=0.0, ge=0.0, le=100.0)
+    score_trends: List[ScoreTrendItem] = Field(default_factory=list)
+    round_averages: Dict[str, float] = Field(default_factory=dict)
+    top_strengths: List[str] = Field(default_factory=list)
+    key_improvement_areas: List[str] = Field(default_factory=list)
+
+    # Extended dashboard objects
+    summary: Optional[AnalyticsSummary] = None
+    score_progression: Optional[List[ScoreProgressionPoint]] = None
+    round_comparison: Optional[List[RoundComparisonItem]] = None
+    competencies: Optional[List[CompetencyRadarItem]] = None
+    strengths: Optional[List[str]] = None
+    weaknesses: Optional[List[str]] = None
+    recommended_next_action: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+

@@ -52,6 +52,71 @@ InterviewGenie AI is architected as a decoupled, multi-tiered software ecosystem
 +-------------------------------------------------------------------------------------------------+
 ```
 
+### High-Level Multi-Tier Flowchart
+
+```mermaid
+flowchart TD
+    subgraph PresentationLayer["Presentation Layer (React 19 SPA)"]
+        UI["Candidate Interface (Tailwind CSS 4)"]
+        STT["Web Speech Recognition (STT)"]
+        TTS["Web Speech Synthesis (TTS)"]
+        MediaCam["Client-Side Camera Preview (Zero-Upload)"]
+    end
+
+    subgraph GatewayLayer["Application Gateway Layer (FastAPI)"]
+        Router["FastAPI REST Router & Middleware"]
+        AuthSec["JWT Auth & Bcrypt Security"]
+        PydanticModel["Pydantic v2 Contract Validation"]
+    end
+
+    subgraph AgentLayer["Agentic Intelligence Layer (MAS Engine)"]
+        CoordAgent["Coordinator Agent<br/>(Global FSM & Adaptive Router)"]
+        HRAgent["HR Agent<br/>(STAR Behavioral Matrix)"]
+        TechAgent["Technical Agent<br/>(DSA, Systems, Concurrency)"]
+        AptAgent["Aptitude Agent<br/>(Psychometric MCQ Bank)"]
+        ResumeAgent["Resume Agent<br/>(PyMuPDF Grounded Probing)"]
+        EvalAgent["Evaluation Agent<br/>(4-Pillar Rubric Tensor)"]
+    end
+
+    subgraph InferenceLayer["Dual-Mode Inference Subsystem"]
+        GenAIClient["Unified Gemini Client"]
+        LiveGemini["Google Gemini 1.5 Pro API"]
+        DetFallback["Deterministic Fallback Engine (Zero-Key)"]
+    end
+
+    subgraph PersistenceLayer["Persistence & Artifact Layer"]
+        DB[("SQLite / PostgreSQL (SQLAlchemy 2.0)")]
+        MediaStorage["Encrypted Local Media Storage"]
+        ReportLab["ReportLab Binary PDF Generator"]
+    end
+
+    UI <--> STT
+    UI <--> TTS
+    UI --> Router
+    Router --> AuthSec
+    Router --> PydanticModel
+    Router --> CoordAgent
+
+    CoordAgent --> HRAgent
+    CoordAgent --> TechAgent
+    CoordAgent --> AptAgent
+    CoordAgent --> ResumeAgent
+    CoordAgent --> EvalAgent
+
+    HRAgent --> GenAIClient
+    TechAgent --> GenAIClient
+    ResumeAgent --> GenAIClient
+    EvalAgent --> GenAIClient
+
+    GenAIClient <--> LiveGemini
+    GenAIClient <--> DetFallback
+
+    Router --> DB
+    Router --> MediaStorage
+    EvalAgent --> ReportLab
+    ReportLab --> UI
+```
+
 ---
 
 ## 2. Finite State Machine (FSM) Formalization
@@ -246,3 +311,15 @@ InterviewGenie AI implements an **Acoustic Turn-Taking Lock** in the browser pre
    - A 300ms acoustic dampening delay is observed.
    - Microphone recognition (`webkitSpeechRecognition.start()`) is resumed.
 3. This eliminates self-transcription and maintains clean transcript integrity.
+
+---
+
+## 8. Related Project Documentation
+
+- [01_PROBLEM_STATEMENT.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/01_PROBLEM_STATEMENT.md) — Problem Formulation and Systemic Objectives
+- [02_LITERATURE_REVIEW.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/02_LITERATURE_REVIEW.md) — Theoretical Foundations & Academic Survey
+- [03_RESEARCH_GAP.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/03_RESEARCH_GAP.md) — Comparative Analysis Against Existing Systems
+- [04_PEAS_FRAMEWORK.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/04_PEAS_FRAMEWORK.md) — Russell & Norvig PEAS Multi-Agent Specification
+- [06_RESPONSIBLE_AI_AND_PRIVACY.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/06_RESPONSIBLE_AI_AND_PRIVACY.md) — Anti-Bias Architecture & GDPR Sovereignty
+- [07_EXPERIMENTAL_RESULTS_AND_EVALUATION.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/07_EXPERIMENTAL_RESULTS_AND_EVALUATION.md) — Benchmarks & Empirical Reliability
+- [08_USER_GUIDE_AND_DEMO_SCRIPT.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/08_USER_GUIDE_AND_DEMO_SCRIPT.md) — Operational Manual & Academic Viva Defense Protocol

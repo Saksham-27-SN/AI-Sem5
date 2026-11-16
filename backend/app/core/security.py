@@ -1,14 +1,53 @@
+import html
+import re
 import hashlib
 import hmac
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import jwt, JWTError
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from backend.app.core.config import settings
 
 security = HTTPBearer(auto_error=False)
+
+def sanitize_input(value: Optional[str]) -> Optional[str]:
+    """
+    Sanitizes user input string against Cross-Site Scripting (XSS) attacks.
+    Strips dangerous HTML tags, inline JavaScript handlers (e.g. onerror, onload),
+    script/iframe/object tags, and encodes HTML entities.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        return str(value)
+    
+    # Strip script, iframe, object, embed, style, applet tags and their contents
+    cleaned = re.sub(
+        r'<(script|iframe|object|embed|style|applet)\b[^>]*>.*?</\1>',
+        '',
+        value,
+        flags=re.IGNORECASE | re.DOTALL
+    )
+    # Strip any dangling / self-closing dangerous tags
+    cleaned = re.sub(
+        r'<(script|iframe|object|embed|style|applet)\b[^>]*/>',
+        '',
+        cleaned,
+        flags=re.IGNORECASE
+    )
+    # Strip javascript: and vbscript: URIs
+    cleaned = re.sub(r'(javascript|vbscript|data):[^\s"\'<>]*', '', cleaned, flags=re.IGNORECASE)
+    # Strip inline event handlers like onerror=..., onload=..., onclick=..., onfocus=..., etc.
+    cleaned = re.sub(r'\bon\w+\s*=\s*(["\'][^"\']*["\']|[^\s>]+)', '', cleaned, flags=re.IGNORECASE)
+    # Escape any remaining HTML markup to neutralize any tags
+    cleaned = html.escape(cleaned, quote=True)
+    return cleaned
+
+def sanitize_html(value: Optional[str]) -> Optional[str]:
+    """Alias for sanitize_input."""
+    return sanitize_input(value)
 
 def hash_password(password: str) -> str:
     """Secure password hashing using PBKDF2 HMAC-SHA256."""
@@ -53,27 +92,34 @@ def decode_access_token(token: str) -> Optional[dict]:
     except JWTError:
         return None
 
-def get_current_user_id(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> str:
-    """Dependency to retrieve the authenticated user ID from Authorization header."""
-    if not credentials:
+def get_current_user_id(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    token: Optional[str] = Query(None)
+) -> str:
+    """Dependency to retrieve the authenticated user ID from Authorization header or ?token= query param."""
+    raw_token = credentials.credentials if credentials else token
+    if not raw_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication credentials not provided",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = credentials.credentials
-    payload = decode_access_token(token)
+    payload = decode_access_token(raw_token)
     if not payload or "sub" not in payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired authentication token",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return payload["sub"]
+    return str(payload["sub"])
 
-def get_optional_user_id(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[str]:
+def get_optional_user_id(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    token: Optional[str] = Query(None)
+) -> Optional[str]:
     """Dependency that returns user ID if token present, or None if anonymous."""
-    if not credentials:
+    raw_token = credentials.credentials if credentials else token
+    if not raw_token:
         return None
-    payload = decode_access_token(credentials.credentials)
-    return payload.get("sub") if payload else None
+    payload = decode_access_token(raw_token)
+    return str(payload.get("sub")) if (payload and "sub" in payload) else None

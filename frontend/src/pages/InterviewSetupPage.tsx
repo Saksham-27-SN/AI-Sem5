@@ -1,11 +1,20 @@
 // src/pages/InterviewSetupPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
+import { HardwareDiagnostics } from '../components/HardwareDiagnostics';
 import type { InterviewType, DifficultyLevel, InterviewCreatePayload } from '../types';
 import {
-  Sliders,
+  Container,
+  SectionHeader,
+  Card,
+  Badge,
+  Button,
+  Input,
+  Select,
+} from '../components/ui';
+import {
   Play,
   Video,
   Code,
@@ -15,24 +24,35 @@ import {
   Mic,
   ShieldCheck,
   Check,
-  Sparkles,
-  AlertCircle,
+  X,
+  Sliders,
 } from 'lucide-react';
 
 export const InterviewSetupPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
+  useEffect(() => {
+    document.title = 'Interview Setup | InterviewGenie AI';
+  }, []);
+
   const [interviewType, setInterviewType] = useState<InterviewType>('hr');
   const [domain, setDomain] = useState('Software Engineering');
   const [targetRole, setTargetRole] = useState('Senior Full Stack Engineer');
+  const [roleError, setRoleError] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium');
   const [totalQuestions, setTotalQuestions] = useState(5);
   const [enableVoice, setEnableVoice] = useState(true);
   const [enableVideo, setEnableVideo] = useState(true);
   const [hasConsent, setHasConsent] = useState(true);
+  const [consentError, setConsentError] = useState<string | null>(null);
   const [topicInput, setTopicInput] = useState('');
-  const [topics, setTopics] = useState<string[]>(['React', 'TypeScript', 'FastAPI', 'Distributed Systems']);
+  const [topics, setTopics] = useState<string[]>([
+    'React',
+    'TypeScript',
+    'FastAPI',
+    'Distributed Systems',
+  ]);
   const [submitting, setSubmitting] = useState(false);
 
   const interviewModes = [
@@ -41,52 +61,53 @@ export const InterviewSetupPage: React.FC = () => {
       title: 'HR & Behavioral',
       desc: 'STAR Framework, leadership traits, conflict management, and culture alignment.',
       icon: Video,
-      color: 'border-blue-500 text-blue-400 bg-blue-500/10',
+      badge: 'Elena',
     },
     {
       id: 'technical' as InterviewType,
       title: 'Technical Coding',
       desc: 'Live code editor, multi-language test runners, algorithmic design, and data structures.',
       icon: Code,
-      color: 'border-purple-500 text-purple-400 bg-purple-500/10',
+      badge: 'Marcus',
     },
     {
       id: 'aptitude' as InterviewType,
       title: 'Aptitude & Logic',
       desc: 'Timed multiple-choice assessment: quantitative reasoning, logic, and OS fundamentals.',
       icon: Brain,
-      color: 'border-emerald-500 text-emerald-400 bg-emerald-500/10',
+      badge: 'Cipher',
     },
     {
       id: 'resume' as InterviewType,
       title: 'Resume-Tailored',
       desc: 'Deep questions generated from your uploaded projects, tech stacks, and career milestones.',
       icon: FileText,
-      color: 'border-amber-500 text-amber-400 bg-amber-500/10',
+      badge: 'Athena',
     },
     {
       id: 'comprehensive' as InterviewType,
       title: 'Full Loop (All 3)',
       desc: 'Complete mock hiring loop cycling through HR, Technical Coding, and Logic assessment.',
       icon: Layers,
-      color: 'border-cyan-500 text-cyan-400 bg-cyan-500/10',
+      badge: 'Director',
     },
   ];
 
-  const domains = [
-    'Software Engineering',
-    'Frontend / Web Engineering',
-    'Backend & Cloud Microservices',
-    'Distributed Systems & Architecture',
-    'AI / Machine Learning Engineering',
-    'DevOps, SRE & Infrastructure',
+  const domainOptions = [
+    { value: 'Software Engineering', label: 'Software Engineering' },
+    { value: 'Frontend / Web Engineering', label: 'Frontend / Web Engineering' },
+    { value: 'Backend & Cloud Microservices', label: 'Backend & Cloud Microservices' },
+    { value: 'Distributed Systems & Architecture', label: 'Distributed Systems & Architecture' },
+    { value: 'AI / Machine Learning Engineering', label: 'AI / Machine Learning Engineering' },
+    { value: 'DevOps, SRE & Infrastructure', label: 'DevOps, SRE & Infrastructure' },
   ];
 
-  const handleAddTopic = (e: React.KeyboardEvent) => {
+  const handleAddTopic = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && topicInput.trim()) {
       e.preventDefault();
-      if (!topics.includes(topicInput.trim())) {
-        setTopics([...topics, topicInput.trim()]);
+      const trimmed = topicInput.trim();
+      if (!topics.includes(trimmed)) {
+        setTopics([...topics, trimmed]);
       }
       setTopicInput('');
     }
@@ -97,17 +118,35 @@ export const InterviewSetupPage: React.FC = () => {
   };
 
   const handleLaunch = async () => {
-    if (enableVideo && !hasConsent) {
-      showToast('warning', 'Consent Required', 'Please confirm recording consent to enable video simulation.');
-      return;
+    let hasValidationError = false;
+
+    if (!targetRole.trim()) {
+      setRoleError('Target role title is required.');
+      hasValidationError = true;
+    } else {
+      setRoleError(null);
     }
+
+    if (enableVideo && !hasConsent) {
+      setConsentError('Explicit recording consent is required when camera video is enabled.');
+      showToast(
+        'warning',
+        'Consent Required',
+        'Please confirm recording consent to enable video simulation.'
+      );
+      hasValidationError = true;
+    } else {
+      setConsentError(null);
+    }
+
+    if (hasValidationError) return;
 
     setSubmitting(true);
     try {
       const payload: InterviewCreatePayload = {
         interview_type: interviewType,
         domain,
-        target_role: targetRole,
+        target_role: targetRole.trim(),
         difficulty,
         total_questions: totalQuestions,
         custom_topics: topics,
@@ -116,17 +155,21 @@ export const InterviewSetupPage: React.FC = () => {
       };
 
       const session = await api.createInterview(payload);
-      showToast('success', 'Interview Initialized', `Session created for ${targetRole} (${difficulty}). Launching room...`);
+      showToast(
+        'success',
+        'Interview Initialized',
+        `Session created for ${targetRole} (${difficulty}). Launching room...`
+      );
 
       // Route to the appropriate room
       if (interviewType === 'technical') {
-        navigate(`/interview/technical?sessionId=${session.id}`);
+        navigate(`/interview/technical?sessionId=${session.id}&consent=${hasConsent}`);
       } else if (interviewType === 'aptitude') {
         navigate(`/interview/aptitude?sessionId=${session.id}`);
       } else if (interviewType === 'resume') {
         navigate(`/resume?sessionId=${session.id}`);
       } else {
-        navigate(`/interview/live?sessionId=${session.id}`);
+        navigate(`/interview/live?sessionId=${session.id}&consent=${hasConsent}`);
       }
     } catch (err: unknown) {
       const error = err as Error;
@@ -137,246 +180,314 @@ export const InterviewSetupPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-gray-100 p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-8">
-      {/* Header */}
-      <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-400 text-xs font-semibold mb-2">
-          <Sliders className="w-3.5 h-3.5" />
-          <span>Simulation Configurator</span>
-        </div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Configure Your Interview</h1>
-        <p className="text-xs sm:text-sm text-gray-400 mt-1">
-          Customize the agent persona, domain specializations, difficulty, and media services before stepping into the room.
-        </p>
-      </div>
+    <Container size="lg" className="py-8 space-y-8">
+      {/* 1. Page Header */}
+      <SectionHeader
+        align="left"
+        badge="Simulation Configurator"
+        badgeVariant="blue"
+        title="Configure Your Interview"
+        subtitle="Customize the autonomous agent persona, technical domain, difficulty scale, and hardware devices before launching the session."
+      />
 
       <div className="space-y-6">
-        {/* 1. Mode Selector */}
-        <div className="p-6 rounded-2xl bg-surface border border-gray-800">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-blue-600/30 text-blue-400 text-xs flex items-center justify-center font-bold">1</span>
-            Select Interview Format
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {/* 2. Format / Track Selector */}
+        <Card padding="md" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-blue-600/30 text-blue-400 text-xs flex items-center justify-center font-bold">
+                1
+              </span>
+              <span>Select Interview Track</span>
+            </h2>
+            <Badge variant="blue" size="sm">
+              Required
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
             {interviewModes.map((mode) => {
               const Icon = mode.icon;
               const isSelected = interviewType === mode.id;
               return (
-                <button
+                <div
                   key={mode.id}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setInterviewType(mode.id)}
-                  className={`p-4 rounded-xl border text-left transition-all relative flex flex-col justify-between ${
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setInterviewType(mode.id);
+                    }
+                  }}
+                  className={`p-4 rounded-xl border text-left transition-all duration-150 relative flex flex-col justify-between cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     isSelected
-                      ? `${mode.color} border-current shadow-lg shadow-blue-500/10`
-                      : 'border-gray-800 bg-surface/50 text-gray-300 hover:border-gray-700 hover:bg-surface-light'
+                      ? 'border-blue-500 bg-blue-600/15 shadow-lg shadow-blue-500/10'
+                      : 'border-[#1E293B] bg-[#131B2E] text-gray-300 hover:border-gray-600 hover:bg-[#1A253D]'
                   }`}
                 >
                   {isSelected && (
-                    <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center">
+                    <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center">
                       <Check className="w-3 h-3 stroke-[3]" />
                     </div>
                   )}
                   <div>
-                    <Icon className="w-6 h-6 mb-3" />
-                    <p className="font-bold text-xs text-white">{mode.title}</p>
-                    <p className="text-[11px] text-gray-400 mt-1 leading-snug line-clamp-3">{mode.desc}</p>
+                    <div className="flex items-center justify-between mb-3">
+                      <Icon className={`w-6 h-6 ${isSelected ? 'text-blue-400' : 'text-gray-400'}`} />
+                      <Badge variant={isSelected ? 'blue' : 'gray'} size="sm">
+                        {mode.badge}
+                      </Badge>
+                    </div>
+                    <p className="font-bold text-sm text-white">{mode.title}</p>
+                    <p className="text-xs text-gray-300 mt-1 leading-relaxed">
+                      {mode.desc}
+                    </p>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
-        </div>
+        </Card>
 
-        {/* 2. Target Role & Domain */}
-        <div className="p-6 rounded-2xl bg-surface border border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* 3. Target Role & Domain */}
+        <Card padding="md" className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-blue-600/30 text-blue-400 text-xs flex items-center justify-center font-bold">2</span>
-              Target Role
+            <h2 className="text-base font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-blue-600/30 text-blue-400 text-xs flex items-center justify-center font-bold">
+                2
+              </span>
+              <span>Target Role</span>
             </h2>
-            <input
-              type="text"
+            <Input
+              label="Position / Title"
               value={targetRole}
-              onChange={(e) => setTargetRole(e.target.value)}
+              onChange={(e) => {
+                setTargetRole(e.target.value);
+                if (roleError) setRoleError(null);
+              }}
+              error={roleError || undefined}
+              helperText="The AI will calibrate question depth and seniority expectations to this exact title."
               placeholder="e.g. Senior Full Stack Engineer, Tech Lead"
-              className="w-full px-4 py-2.5 rounded-xl bg-surface-dark border border-gray-700 text-white text-xs outline-none focus:border-blue-500"
             />
-            <p className="text-[11px] text-gray-400 mt-1.5">
-              The AI will tailor question depth and seniority expectations to this exact title.
+          </div>
+
+          <div>
+            <h2 className="text-base font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-blue-600/30 text-blue-400 text-xs flex items-center justify-center font-bold">
+                3
+              </span>
+              <span>Primary Domain</span>
+            </h2>
+            <Select
+              label="Engineering Domain"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              options={domainOptions}
+              helperText="Evaluation rubrics and technical terminology align to this discipline."
+            />
+          </div>
+        </Card>
+
+        {/* 4. Difficulty & Question Count */}
+        <Card padding="md" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-200 mb-2">
+              Difficulty Level
+            </label>
+            <div className="grid grid-cols-3 gap-2.5">
+              {(['easy', 'medium', 'hard'] as DifficultyLevel[]).map((lvl) => {
+                const isCurrent = difficulty === lvl;
+                return (
+                  <Button
+                    key={lvl}
+                    type="button"
+                    variant={isCurrent ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={() => setDifficulty(lvl)}
+                    className="capitalize"
+                  >
+                    {lvl}
+                  </Button>
+                );
+              })}
+            </div>
+            <p className="text-sm text-gray-400 mt-2">
+              Adjusts the complexity of scenario prompts and coding challenge rubrics.
             </p>
           </div>
 
           <div>
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-blue-600/30 text-blue-400 text-xs flex items-center justify-center font-bold">3</span>
-              Primary Domain
-            </h2>
-            <select
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-surface-dark border border-gray-700 text-white text-xs outline-none focus:border-blue-500"
-            >
-              {domains.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-            <p className="text-[11px] text-gray-400 mt-1.5">Focus areas and technical terminology align to this domain.</p>
-          </div>
-        </div>
-
-        {/* 3. Difficulty & Questions Count */}
-        <div className="p-6 rounded-2xl bg-surface border border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Difficulty Level</h2>
-            <div className="grid grid-cols-3 gap-2">
-              {(['easy', 'medium', 'hard'] as DifficultyLevel[]).map((lvl) => (
-                <button
-                  key={lvl}
-                  type="button"
-                  onClick={() => setDifficulty(lvl)}
-                  className={`py-2 px-3 rounded-xl border text-xs font-semibold capitalize transition-all ${
-                    difficulty === lvl
-                      ? 'border-blue-500 bg-blue-500/20 text-blue-400'
-                      : 'border-gray-800 bg-surface/50 text-gray-400 hover:text-white'
-                  }`}
-                >
-                  {lvl}
-                </button>
-              ))}
+            <div className="flex items-center justify-between mb-2">
+              <label htmlFor="question-count-slider" className="text-sm font-semibold text-gray-200">
+                Question Count
+              </label>
+              <Badge variant="blue" size="sm">
+                {totalQuestions} Questions
+              </Badge>
             </div>
-          </div>
-
-          <div>
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center justify-between">
-              <span>Question Count</span>
-              <span className="text-blue-400 font-mono text-xs">{totalQuestions} Questions</span>
-            </h2>
             <input
+              id="question-count-slider"
               type="range"
               min={3}
               max={10}
               value={totalQuestions}
               onChange={(e) => setTotalQuestions(Number(e.target.value))}
-              className="w-full accent-blue-500 cursor-pointer"
+              className="w-full accent-blue-500 cursor-pointer h-2 bg-gray-800 rounded-lg"
+              aria-valuemin={3}
+              aria-valuemax={10}
+              aria-valuenow={totalQuestions}
             />
-            <div className="flex justify-between text-[11px] text-gray-400 mt-1">
-              <span>3 (Express)</span>
-              <span>5 (Standard)</span>
-              <span>10 (Exhaustive)</span>
+            <div className="flex justify-between text-xs text-gray-400 mt-1.5 font-medium">
+              <span>3 (Express ~10 min)</span>
+              <span>5 (Standard ~20 min)</span>
+              <span>10 (Comprehensive ~40 min)</span>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* 4. Custom Focus Topics */}
-        <div className="p-6 rounded-2xl bg-surface border border-gray-800">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-2">Custom Focus Topics</h2>
-          <p className="text-xs text-gray-400 mb-3">
-            Type a topic (e.g. Redis, GraphQL, Sharding) and press <kbd className="px-1.5 py-0.5 rounded bg-gray-800 text-gray-300 font-mono text-[10px]">Enter</kbd> to add.
+        {/* 5. Custom Focus Topics */}
+        <Card padding="md" className="space-y-3">
+          <label htmlFor="custom-topic-input" className="block text-sm font-semibold text-gray-200">
+            Custom Focus Topics
+          </label>
+          <p className="text-sm text-gray-300">
+            Type a topic (e.g. Redis, GraphQL, Sharding, Concurrency) and press{' '}
+            <kbd className="px-2 py-0.5 rounded bg-gray-800 border border-gray-700 text-gray-200 font-mono text-xs">
+              Enter
+            </kbd>{' '}
+            to add.
           </p>
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 pt-1">
             {topics.map((t) => (
-              <span
-                key={t}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30 text-xs font-medium"
-              >
-                {t}
+              <Badge key={t} variant="blue" size="md" className="gap-2">
+                <span>{t}</span>
                 <button
                   type="button"
                   onClick={() => handleRemoveTopic(t)}
-                  className="hover:text-rose-400 text-gray-400"
+                  className="hover:text-rose-400 text-blue-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-rose-500 rounded p-0.5 cursor-pointer"
+                  aria-label={`Remove topic ${t}`}
                 >
-                  ×
+                  <X className="w-3.5 h-3.5" />
                 </button>
-              </span>
+              </Badge>
             ))}
           </div>
-          <input
-            type="text"
+          <Input
+            id="custom-topic-input"
             value={topicInput}
             onChange={(e) => setTopicInput(e.target.value)}
             onKeyDown={handleAddTopic}
-            placeholder="Add specific tech stack or skill..."
-            className="w-full px-4 py-2.5 rounded-xl bg-surface-dark border border-gray-700 text-white text-xs outline-none focus:border-blue-500"
+            placeholder="Add specific tech stack or skill (e.g., Kafka, Kubernetes, SQL Optimization)..."
           />
-        </div>
+        </Card>
 
-        {/* 5. Media Services & Privacy Consent */}
-        <div className="p-6 rounded-2xl bg-surface border border-gray-800 space-y-4">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-1 flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            Media & Privacy Services
-          </h2>
+        {/* 6. Media Services & Privacy Consent */}
+        <Card padding="md" className="space-y-4">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-base font-bold text-white uppercase tracking-wider">
+              Media & Privacy Configuration
+            </h2>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="flex items-start gap-3 p-3.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-surface/50 cursor-pointer">
+            <label className="flex items-start gap-3.5 p-4 rounded-xl border border-[#1E293B] hover:border-gray-600 bg-[#131B2E] cursor-pointer transition-colors duration-150">
               <input
                 type="checkbox"
                 checked={enableVoice}
                 onChange={(e) => setEnableVoice(e.target.checked)}
-                className="mt-0.5 rounded accent-blue-500 w-4 h-4"
+                className="mt-1 rounded accent-blue-500 w-4 h-4 cursor-pointer"
               />
-              <div>
-                <p className="font-semibold text-xs text-white flex items-center gap-1.5">
-                  <Mic className="w-3.5 h-3.5 text-blue-400" />
+              <div className="space-y-1">
+                <p className="font-semibold text-sm text-white flex items-center gap-1.5">
+                  <Mic className="w-4 h-4 text-blue-400" />
                   Real-Time Voice STT & AI Speech
                 </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">
-                  AI reads questions aloud and transcribes candidate speech with latency &lt;350ms.
+                <p className="text-xs text-gray-300 leading-relaxed">
+                  Elena/Marcus reads questions aloud and transcribes candidate speech with low-latency audio pipelines.
                 </p>
               </div>
             </label>
 
-            <label className="flex items-start gap-3 p-3.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-surface/50 cursor-pointer">
+            <label className="flex items-start gap-3.5 p-4 rounded-xl border border-[#1E293B] hover:border-gray-600 bg-[#131B2E] cursor-pointer transition-colors duration-150">
               <input
                 type="checkbox"
                 checked={enableVideo}
                 onChange={(e) => setEnableVideo(e.target.checked)}
-                className="mt-0.5 rounded accent-blue-500 w-4 h-4"
+                className="mt-1 rounded accent-blue-500 w-4 h-4 cursor-pointer"
               />
-              <div>
-                <p className="font-semibold text-xs text-white flex items-center gap-1.5">
-                  <Video className="w-3.5 h-3.5 text-purple-400" />
+              <div className="space-y-1">
+                <p className="font-semibold text-sm text-white flex items-center gap-1.5">
+                  <Video className="w-4 h-4 text-purple-400" />
                   Candidate Video & Audio Stream
                 </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">
-                  Provides live webcam preview and optional local video recording.
+                <p className="text-xs text-gray-300 leading-relaxed">
+                  Provides live webcam preview and optional local video recording stored securely in browser memory.
                 </p>
               </div>
             </label>
           </div>
 
           {enableVideo && (
-            <div className="p-3.5 rounded-xl bg-blue-950/20 border border-blue-500/20 flex items-start gap-3">
+            <div
+              className={`p-4 rounded-xl border transition-colors ${
+                consentError
+                  ? 'bg-rose-950/20 border-rose-500/50'
+                  : 'bg-blue-950/20 border-blue-500/25'
+              } flex items-start gap-3.5`}
+            >
               <input
                 type="checkbox"
                 id="consentCheck"
                 checked={hasConsent}
-                onChange={(e) => setHasConsent(e.target.checked)}
-                className="mt-0.5 rounded accent-blue-500 w-4 h-4 shrink-0"
+                onChange={(e) => {
+                  setHasConsent(e.target.checked);
+                  if (consentError) setConsentError(null);
+                }}
+                className="mt-1 rounded accent-blue-500 w-4 h-4 shrink-0 cursor-pointer"
               />
-              <label htmlFor="consentCheck" className="text-[11px] text-gray-300 leading-relaxed cursor-pointer">
-                <span className="font-semibold text-blue-400">Explicit Recording Consent:</span> I consent to local recording of this simulation session for performance analysis and self-review. Recordings remain stored in candidate local browser memory and can be deleted at any time with one click.
-              </label>
+              <div className="space-y-1">
+                <label
+                  htmlFor="consentCheck"
+                  className="text-xs sm:text-sm text-gray-200 leading-relaxed cursor-pointer block"
+                >
+                  <span className="font-semibold text-blue-400">
+                    Explicit Recording Consent:
+                  </span>{' '}
+                  I consent to local recording of this simulation session for performance analysis and self-review. Recordings remain stored in candidate local browser memory and can be deleted at any time with one click.
+                </label>
+                {consentError && (
+                  <p className="text-xs text-rose-400 font-medium" role="alert">
+                    {consentError}
+                  </p>
+                )}
+              </div>
             </div>
           )}
-        </div>
+        </Card>
 
-        {/* Launch CTA */}
-        <div className="pt-2 flex justify-end">
-          <button
+        {/* 7. Pre-Flight Hardware Diagnostics */}
+        {(enableVoice || enableVideo) && <HardwareDiagnostics />}
+
+        {/* 8. Launch Simulation CTA (Single Primary CTA) */}
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-gray-400">
+            Session data is isolated to your candidate account with deterministic grading.
+          </p>
+          <Button
             type="button"
-            disabled={submitting}
+            variant="primary"
+            size="lg"
+            isLoading={submitting}
             onClick={handleLaunch}
-            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-sm shadow-xl shadow-blue-500/25 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50"
+            leftIcon={<Play className="w-5 h-5 fill-current" />}
+            className="w-full sm:w-auto"
           >
-            <Play className="w-4 h-4 fill-current" />
-            <span>{submitting ? 'Initializing Session...' : 'Step Into Interview Room'}</span>
-          </button>
+            Launch Simulation
+          </Button>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };

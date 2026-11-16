@@ -11,10 +11,21 @@ You evaluate candidates on:
 1. Architectural depth and foundational computer science principles.
 2. Clean code, time/space complexity awareness, and edge-case handling.
 3. Scalability, data integrity, and pragmatic engineering trade-offs.
+
+STRICT ETHICAL & SAFETY DIRECTIVE:
+You must NEVER evaluate, judge, score, infer, or comment upon candidate physical appearance, facial expressions, eye contact, attire, background environment, gender, race, age, accent, or emotional state.
+All evaluations must be 100% merit-based, focused exclusively on substantive technical accuracy, algorithmic correctness, engineering trade-offs, and communication clarity.
+
 Output strictly valid JSON without extraneous text."""
 
     TECHNICAL_TOPIC_BANK: Dict[str, List[Dict[str, Any]]] = {
         "Python": [
+            {
+                "category": "Language Fundamentals & Data Types",
+                "question_text": "What is the difference between mutable and immutable data types in Python? Give examples of each and explain how passing them to functions behaves.",
+                "expected_criteria": ["Lists/dicts/sets as mutable vs int/str/tuple as immutable", "Pass-by-object-reference mechanism", "In-place modifications vs re-assignment"],
+                "difficulty": "easy"
+            },
             {
                 "category": "Python Internals & Concurrency",
                 "question_text": "Explain how the Python Global Interpreter Lock (GIL) impacts multi-threaded CPU-bound programs versus I/O-bound programs. How do multiprocessing and asyncio overcome these limitations?",
@@ -36,6 +47,12 @@ Output strictly valid JSON without extraneous text."""
         ],
         "Java": [
             {
+                "category": "Core Object-Oriented Principles",
+                "question_text": "What is the difference between '==' and the 'equals()' method in Java? Why is it essential to override hashCode() whenever equals() is overridden?",
+                "expected_criteria": ["Reference comparison vs value equality", "Default Object class equals implementation", "HashCode contract for hash-based collections (HashSet, HashMap)"],
+                "difficulty": "easy"
+            },
+            {
                 "category": "JVM Architecture & Memory",
                 "question_text": "Describe the memory layout of the JVM (Heap, Stack, Metaspace) and explain the lifecycle of an object from Eden space to Tenured generation in the G1 Garbage Collector.",
                 "expected_criteria": ["Generational hypothesis", "Eden/Survivor spaces copy collector", "Tenuring threshold and concurrent marking"],
@@ -55,6 +72,12 @@ Output strictly valid JSON without extraneous text."""
             }
         ],
         "DSA": [
+            {
+                "category": "Data Structures Basics",
+                "question_text": "Compare an Array and a Singly Linked List in terms of time and space complexity for element access, insertion, and deletion at the beginning, middle, and end.",
+                "expected_criteria": ["O(1) random access vs O(N) traversal", "O(1) head insertion in linked list vs O(N) array shifting", "Cache locality and contiguous memory advantages of arrays"],
+                "difficulty": "easy"
+            },
             {
                 "category": "Algorithms & Streaming Data",
                 "question_text": "Given a distributed log stream with millions of timestamps, how would you design an algorithm to find the top 100 most frequent IP addresses in near real-time?",
@@ -76,6 +99,12 @@ Output strictly valid JSON without extraneous text."""
         ],
         "DBMS": [
             {
+                "category": "Relational Modeling & Normalization",
+                "question_text": "Explain the difference between a Primary Key and a Foreign Key in relational databases. What is the purpose of database normalization, specifically up to Third Normal Form (3NF)?",
+                "expected_criteria": ["Unique row identification vs referential integrity constraint", "Elimination of data redundancy and update anomalies", "Functional dependencies and transitive dependency elimination"],
+                "difficulty": "easy"
+            },
+            {
                 "category": "Concurrency & Isolation",
                 "question_text": "Differentiate between Optimistic Concurrency Control (OCC) and Pessimistic Concurrency Control (PCC) in high-throughput database transactions. What are dirty reads, non-repeatable reads, and phantom reads?",
                 "expected_criteria": ["Row-level locking vs version check at commit", "ACID isolation levels (Read Committed, Repeatable Read, Serializable)", "Lock contention vs retry overhead"],
@@ -95,6 +124,12 @@ Output strictly valid JSON without extraneous text."""
             }
         ],
         "OS": [
+            {
+                "category": "Process & Thread Fundamentals",
+                "question_text": "Explain the fundamental differences between a process and a thread. What system resources are isolated between processes versus shared among threads of the same process?",
+                "expected_criteria": ["Separate address space, file descriptors, and memory for processes", "Shared heap, global variables, and code segment for threads", "Inter-process communication (IPC) vs direct thread synchronization"],
+                "difficulty": "easy"
+            },
             {
                 "category": "Systems & Concurrency",
                 "question_text": "Explain the four Coffman conditions required for a deadlock to occur. How can an operating system or distributed system prevent or detect deadlocks?",
@@ -116,6 +151,12 @@ Output strictly valid JSON without extraneous text."""
         ],
         "Networks": [
             {
+                "category": "Network Fundamentals & Models",
+                "question_text": "Explain the differences between the OSI 7-layer model and the TCP/IP model. What are the primary responsibilities of the Transport layer versus the Network layer?",
+                "expected_criteria": ["OSI 7 layers vs TCP/IP 4 layers", "Transport layer end-to-end delivery (TCP/UDP)", "Network layer routing and logical addressing (IP)"],
+                "difficulty": "easy"
+            },
+            {
                 "category": "Transport Layer Protocols",
                 "question_text": "Walk through the TCP 3-way handshake and 4-way termination handshake. What is the purpose of the TIME_WAIT state, and what problems occur if it is prematurely closed?",
                 "expected_criteria": ["SYN, SYN-ACK, ACK sequence number synchronization", "FIN, ACK, FIN, ACK closure flow", "2 * MSL guard against delayed segments and socket reuse"],
@@ -136,6 +177,12 @@ Output strictly valid JSON without extraneous text."""
         ],
         "Web Dev": [
             {
+                "category": "Web Fundamentals & Event Loop",
+                "question_text": "Explain the difference between synchronous and asynchronous operations in JavaScript. How does the JavaScript Event Loop coordinate the Call Stack, Web APIs, Microtask Queue (Promises), and Macrotask Queue (setTimeout)?",
+                "expected_criteria": ["Single-threaded event loop mechanics", "Call stack vs Web APIs delegation", "Microtask prioritization over macrotasks"],
+                "difficulty": "easy"
+            },
+            {
                 "category": "Browser Rendering & Optimization",
                 "question_text": "Explain the browser Critical Rendering Path from HTML byte parsing to screen pixels. How do layout thrashing and repaint costs affect Core Web Vitals (LCP, INP, CLS)?",
                 "expected_criteria": ["DOM and CSSOM parsing to Render Tree", "Layout/Reflow calculation vs Paint/Composite layers", "Minimizing DOM mutations and deferring non-critical scripts"],
@@ -155,6 +202,12 @@ Output strictly valid JSON without extraneous text."""
             }
         ],
         "AI/ML": [
+            {
+                "category": "Machine Learning Fundamentals",
+                "question_text": "What are the core differences between Supervised, Unsupervised, and Reinforcement Learning? Explain how loss functions and gradient descent iteratively optimize model weights.",
+                "expected_criteria": ["Labeled data vs unlabeled structure discovery vs reward feedback", "Loss function formulation (MSE, Cross-Entropy)", "Learning rate and gradient descent update step"],
+                "difficulty": "easy"
+            },
             {
                 "category": "Deep Learning Architecture",
                 "question_text": "Explain the Multi-Head Scaled Dot-Product Attention mechanism in Transformers. Why is scaling by sqrt(d_k) necessary, and what is the computational complexity relative to sequence length?",
@@ -210,32 +263,45 @@ Output strictly valid JSON without extraneous text."""
         if not domain:
             return "DSA"
         cleaned = domain.strip().lower()
-        return self.DOMAIN_ALIASES.get(cleaned, "DSA" if cleaned not in [k.lower() for k in self.TECHNICAL_TOPIC_BANK] else domain.strip())
+        if cleaned in self.DOMAIN_ALIASES:
+            return self.DOMAIN_ALIASES[cleaned]
+        for k in self.TECHNICAL_TOPIC_BANK:
+            if k.lower() == cleaned:
+                return k
+        return "DSA"
 
     def get_question(self, domain: str, index: int, difficulty: str = "medium") -> Dict[str, Any]:
         """Fetches technical question matching domain or generates dynamic question."""
         norm_domain = self._normalize_domain(domain)
-        # Ensure we have a valid key from TECHNICAL_TOPIC_BANK
-        target_bank = self.TECHNICAL_TOPIC_BANK.get(norm_domain)
-        if not target_bank:
-            # Check direct match or fallback to DSA
-            target_bank = self.TECHNICAL_TOPIC_BANK.get(norm_domain, self.TECHNICAL_TOPIC_BANK["DSA"])
+        diff_clean = (difficulty or "medium").lower().strip()
+        target_bank = self.TECHNICAL_TOPIC_BANK.get(norm_domain, self.TECHNICAL_TOPIC_BANK["DSA"])
 
-        if index < len(target_bank):
+        # Prioritize matching requested difficulty if available in the topic bank
+        matching_diff = [q for q in target_bank if q.get("difficulty") == diff_clean]
+        if matching_diff and index < len(matching_diff):
+            q = matching_diff[index]
+            return {
+                "question_text": q["question_text"],
+                "category": q["category"],
+                "difficulty": diff_clean,
+                "expected_criteria": list(q["expected_criteria"])
+            }
+        elif index < len(target_bank):
             q = target_bank[index]
             return {
                 "question_text": q["question_text"],
                 "category": q["category"],
-                "difficulty": q["difficulty"],
-                "expected_criteria": q["expected_criteria"]
+                "difficulty": diff_clean or q["difficulty"],
+                "expected_criteria": list(q["expected_criteria"])
             }
 
-        prompt = f"""Generate a high-caliber technical interview question for domain '{norm_domain}', index {index + 1}, difficulty '{difficulty}'.
+        prompt = f"""Generate a high-caliber technical interview question for domain '{norm_domain}', index {index + 1}, difficulty '{diff_clean}'.
+STRICT SAFETY DIRECTIVE: Zero evaluation of physical appearance or emotion. Focus solely on substantive CS and systems concepts.
 Return JSON format:
 {{
   "question_text": "...",
   "category": "{norm_domain}",
-  "difficulty": "{difficulty}",
+  "difficulty": "{diff_clean}",
   "expected_criteria": ["...", "..."]
 }}"""
         raw = gemini_client.generate_content(self.SYSTEM_PROMPT, prompt)
@@ -246,14 +312,25 @@ Return JSON format:
             return {
                 "question_text": fallback_q["question_text"],
                 "category": fallback_q["category"],
-                "difficulty": difficulty,
-                "expected_criteria": fallback_q["expected_criteria"]
+                "difficulty": diff_clean,
+                "expected_criteria": list(fallback_q["expected_criteria"])
             }
+        if "difficulty" not in parsed or not parsed["difficulty"]:
+            parsed["difficulty"] = diff_clean
+        if "category" not in parsed or not parsed["category"]:
+            parsed["category"] = norm_domain
+        if "expected_criteria" not in parsed or not isinstance(parsed["expected_criteria"], list):
+            parsed["expected_criteria"] = ["Algorithmic correctness", "Complexity awareness", "Clean design"]
         return parsed
 
     def evaluate_answer(self, question: str, answer: str, expected_criteria: List[str]) -> Dict[str, Any]:
         """Evaluates candidate technical response against architectural depth and criteria."""
+        clean_ans = (answer or "").strip()
+        word_count = len(clean_ans.split())
+        is_weak = word_count < 5 or any(p in clean_ans.lower() for p in ["don't know", "do not know", "no idea", "not sure", "skip", "pass"])
+
         prompt = f"""Evaluate technical answer.
+STRICT SAFETY DIRECTIVE: Strictly zero evaluation of candidate physical appearance, attire, facial expressions, or emotional state. Scoring is 100% merit-based.
 Question: {question}
 Expected Criteria: {expected_criteria}
 Candidate Answer: {answer}
@@ -271,13 +348,23 @@ Return JSON format:
         raw = gemini_client.generate_content(self.SYSTEM_PROMPT, prompt)
         res = self.clean_json_response(raw)
 
-        # Ensure all required evaluation fields exist with sensible fallbacks
-        score = float(res.get("score", 75.0))
+        if is_weak:
+            return {
+                "score": 30.0,
+                "relevance_score": 25.0,
+                "clarity_score": 40.0,
+                "technical_depth_score": 20.0,
+                "feedback": "Candidate did not provide a technical explanation for this question.",
+                "strengths": ["Acknowledged area for development"],
+                "improvements": ["Review fundamental concepts and runtime mechanics for this topic"]
+            }
+
+        score = self.safe_float(res.get("score"), 75.0)
         return {
             "score": score,
-            "relevance_score": float(res.get("relevance_score", score)),
-            "clarity_score": float(res.get("clarity_score", score)),
-            "technical_depth_score": float(res.get("technical_depth_score", score)),
+            "relevance_score": self.safe_float(res.get("relevance_score"), score),
+            "clarity_score": self.safe_float(res.get("clarity_score"), score),
+            "technical_depth_score": self.safe_float(res.get("technical_depth_score"), score),
             "feedback": str(res.get("feedback", "Technical response demonstrated acceptable baseline understanding.")),
             "strengths": list(res.get("strengths", ["Addressed core technical concept"])),
             "improvements": list(res.get("improvements", ["Provide deeper architectural trade-offs"]))
@@ -285,7 +372,21 @@ Return JSON format:
 
     def assess_code(self, code: str, language: str = "python", problem_description: str = "") -> Dict[str, Any]:
         """Assesses code implementation for algorithmic correctness, time/space complexity, and code quality."""
+        if not code or not code.strip():
+            return {
+                "correctness_score": 0.0,
+                "time_complexity": "N/A",
+                "space_complexity": "N/A",
+                "code_quality_score": 0.0,
+                "overall_score": 0.0,
+                "feedback": "No code implementation was provided.",
+                "strengths": [],
+                "potential_bugs_or_edge_cases": ["Submission is empty."],
+                "optimization_suggestions": ["Implement solution adhering to problem constraints."]
+            }
+
         prompt = f"""Assess candidate code submission for language '{language}'.
+STRICT SAFETY DIRECTIVE: Strictly zero evaluation of candidate identity, appearance, or emotion. Assessment must be 100% objective code quality.
 Problem Description: {problem_description}
 Code:
 ```{language}
@@ -309,11 +410,11 @@ Return JSON format:
         res = self.clean_json_response(raw)
 
         return {
-            "correctness_score": float(res.get("correctness_score", 85.0)),
+            "correctness_score": self.safe_float(res.get("correctness_score"), 85.0),
             "time_complexity": str(res.get("time_complexity", "O(N)")),
             "space_complexity": str(res.get("space_complexity", "O(1)")),
-            "code_quality_score": float(res.get("code_quality_score", 85.0)),
-            "overall_score": float(res.get("overall_score", 85.0)),
+            "code_quality_score": self.safe_float(res.get("code_quality_score"), 85.0),
+            "overall_score": self.safe_float(res.get("overall_score"), 85.0),
             "feedback": str(res.get("feedback", "Code is functionally sound with clean structure.")),
             "strengths": list(res.get("strengths", ["Logical structure follows specifications"])),
             "potential_bugs_or_edge_cases": list(res.get("potential_bugs_or_edge_cases", ["Consider null and boundary inputs"])),
@@ -322,7 +423,7 @@ Return JSON format:
 
     def should_ask_follow_up(self, answer: str, question: str) -> Dict[str, Any]:
         """Determines if a technical answer is too shallow or warrants probing on trade-offs."""
-        word_count = len(answer.strip().split())
+        word_count = len((answer or "").strip().split())
         if word_count < 25:
             return {
                 "needs_follow_up": True,
@@ -332,6 +433,7 @@ Return JSON format:
 
         prompt = f"""Analyze candidate technical answer to question: '{question}'.
 Answer: '{answer}'
+STRICT SAFETY DIRECTIVE: Zero evaluation of physical appearance or emotion. Focus only on engineering trade-offs.
 Decide if an interviewer should probe deeper on engineering trade-offs, scaling limits, or edge cases.
 Return JSON format:
 {{

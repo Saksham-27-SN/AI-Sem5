@@ -2,17 +2,18 @@ import os
 import json
 from datetime import datetime, timezone
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
-from backend.app.core.security import get_current_user_id
+from backend.app.core.security import get_current_user_id, sanitize_input
 from backend.app.models.models import (
     InterviewSession, Question, Answer, EvaluationReport, Profile, User
 )
 from backend.app.schemas.schemas import (
     InterviewCreate, InterviewResponse, QuestionResponse,
-    SubmitAnswerRequest, SubmitAnswerResponse, EvaluationReportResponse, QuestionEvaluation
+    SubmitAnswerRequest, SubmitAnswerResponse, EvaluationReportResponse, QuestionEvaluation,
+    InterviewTranscriptResponse, TranscriptTurn
 )
 from ai_engine.coordinator_agent import coordinator_agent
 from ai_engine.evaluation_agent import EvaluationAgent
@@ -31,13 +32,13 @@ def create_interview(
     session = InterviewSession(
         user_id=user_id,
         interview_type=data.interview_type,
-        domain=data.domain,
-        target_role=data.target_role,
+        domain=sanitize_input(data.domain),
+        target_role=sanitize_input(data.target_role),
         difficulty=data.difficulty,
         total_questions=data.total_questions,
         enable_voice=data.enable_voice,
         enable_video=data.enable_video,
-        custom_topics_json=json.dumps(data.custom_topics or []),
+        custom_topics_json=json.dumps([sanitize_input(t) for t in (data.custom_topics or [])]),
         status="configured"
     )
     db.add(session)
@@ -46,6 +47,7 @@ def create_interview(
     return session
 
 @router.get("", response_model=List[InterviewResponse])
+@router.get("/", response_model=List[InterviewResponse], include_in_schema=False)
 def list_interviews(
     user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db)
@@ -184,6 +186,7 @@ def submit_answer(
         current_question={
             "question_text": question.question_text,
             "category": question.category,
+            "difficulty": question.difficulty,
             "expected_criteria": expected_crit,
             "is_follow_up": question.is_follow_up
         },
@@ -199,7 +202,7 @@ def submit_answer(
     answer = Answer(
         question_id=question.id,
         interview_id=session.id,
-        transcript_text=payload.answer_text,
+        transcript_text=sanitize_input(payload.answer_text) if payload.answer_text else "",
         duration_seconds=payload.duration_seconds or 0,
         words_per_minute=payload.speech_metrics.words_per_minute if payload.speech_metrics else None,
         evaluation_score=score,
@@ -211,6 +214,11 @@ def submit_answer(
         improvements_json=json.dumps(eval_data.get("improvements", []))
     )
     db.add(answer)
+    db.flush()
+
+    # Update session difficulty based on adaptation
+    if "current_difficulty" in turn_result:
+        session.difficulty = turn_result["current_difficulty"]
 
     next_action = turn_result["next_action"]
     next_q_response = None
@@ -225,7 +233,7 @@ def submit_answer(
             order_index=new_index if next_action != "follow_up" else session.current_question_index + 1,
             round_type=session.interview_type,
             category=next_q_info.get("category", question.category),
-            difficulty=next_q_info.get("difficulty", question.difficulty),
+            difficulty=next_q_info.get("difficulty", turn_result.get("current_difficulty", question.difficulty)),
             question_text=next_q_info["question_text"],
             expected_criteria_json=json.dumps(next_q_info.get("expected_criteria", [])),
             is_follow_up=(next_action == "follow_up"),
@@ -365,6 +373,109 @@ def get_evaluation_report(
         "improvement_plan": eval_summary["improvement_plan"],
         "pdf_report_url": f"/api/interviews/{session.id}/report.pdf"
     }
+
+@router.get("/{interview_id}/transcript", response_model=InterviewTranscriptResponse)
+def get_interview_transcript(
+    interview_id: str,
+    format: Optional[str] = Query("json", description="Response format: 'json' or 'text'"),
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns the complete question-and-answer dialogue transcript for the interview session.
+    Provides structured JSON turn objects as well as human-readable concatenated text dialogue.
+    Export as text directly by specifying ?format=text.
+    """
+    session = db.query(InterviewSession).filter(
+        InterviewSession.id == interview_id,
+        InterviewSession.user_id == user_id
+    ).first()
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Interview session not found."
+        )
+
+    questions = db.query(Question).filter(
+        Question.interview_id == session.id
+    ).order_by(Question.order_index.asc()).all()
+
+    transcript_lines = [
+        f"=== Interview Dialogue Transcript ===",
+        f"Session ID: {session.id}",
+        f"Target Role: {session.target_role}",
+        f"Domain: {session.domain} ({session.interview_type.upper()})",
+        f"Status: {session.status.capitalize()}",
+        f"Date: {(session.completed_at or session.created_at).strftime('%Y-%m-%d %H:%M UTC') if (session.completed_at or session.created_at) else 'N/A'}",
+        "=" * 40,
+        ""
+    ]
+
+    dialogue_turns: List[TranscriptTurn] = []
+    dialogue_json: List[dict] = []
+
+    for q in questions:
+        ans = db.query(Answer).filter(Answer.question_id == q.id).first()
+        answer_text = ans.transcript_text if ans else None
+
+        dialogue_turns.append(
+            TranscriptTurn(
+                order_index=q.order_index,
+                round_type=q.round_type,
+                category=q.category,
+                question_text=q.question_text,
+                answer_text=answer_text,
+                evaluation_score=ans.evaluation_score if ans else None,
+                duration_seconds=ans.duration_seconds if ans else 0,
+                words_per_minute=ans.words_per_minute if ans else None,
+                is_follow_up=q.is_follow_up,
+                created_at=q.created_at
+            )
+        )
+
+        dialogue_json.append({
+            "order_index": q.order_index,
+            "speaker": "AI Interviewer",
+            "role": "interviewer",
+            "text": q.question_text,
+            "category": q.category,
+            "round_type": q.round_type,
+            "is_follow_up": q.is_follow_up
+        })
+        if answer_text is not None:
+            dialogue_json.append({
+                "order_index": q.order_index,
+                "speaker": "Candidate",
+                "role": "candidate",
+                "text": answer_text,
+                "duration_seconds": ans.duration_seconds if ans else 0,
+                "score": ans.evaluation_score if ans else None
+            })
+
+        q_label = f"Question {q.order_index}" + (" (Follow-up)" if q.is_follow_up else "")
+        transcript_lines.append(f"AI ({q_label}): {q.question_text}")
+        if answer_text:
+            transcript_lines.append(f"Candidate: {answer_text}")
+        else:
+            transcript_lines.append("Candidate: [No answer recorded]")
+        transcript_lines.append("")
+
+    full_text = "\n".join(transcript_lines).strip()
+
+    if format and format.lower() in ("text", "txt", "plain"):
+        return Response(content=full_text, media_type="text/plain")
+
+    return InterviewTranscriptResponse(
+        interview_id=session.id,
+        target_role=session.target_role,
+        domain=session.domain,
+        interview_type=session.interview_type,
+        status=session.status,
+        total_questions=session.total_questions,
+        transcript_text=full_text,
+        dialogue=dialogue_turns,
+        dialogue_json=dialogue_json
+    )
 
 @router.get("/{interview_id}/report.pdf")
 def download_pdf_report(

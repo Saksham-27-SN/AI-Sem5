@@ -186,7 +186,7 @@ export class VoiceService {
    * Prevents AI spoken prompts (via speaker) from leaking into microphone input
    * and being transcribed as student answers.
    */
-  public acquireAudioLock(reason = 'AI is speaking'): void {
+  public acquireAudioLock(_reason = 'AI is speaking'): void {
     if (this.lockTimer) {
       clearTimeout(this.lockTimer);
       this.lockTimer = null;
@@ -194,13 +194,18 @@ export class VoiceService {
 
     this.isAudioLocked = true;
     this.setTurnState('AI_SPEAKING');
+    this.currentInterimTranscript = '';
 
-    // Pause recognition listening to prevent acoustic bleed
+    // Immediately abort recognition listening to prevent acoustic bleed / mic uptake
     if (this.recognition && this.isListeningActive) {
       try {
-        this.recognition.stop();
+        this.recognition.abort();
       } catch {
-        // Recognition might already be stopped
+        try {
+          this.recognition.stop();
+        } catch {
+          // Recognition might already be stopped
+        }
       }
     }
   }
@@ -223,8 +228,8 @@ export class VoiceService {
       this.lockTimer = null;
       this.setTurnState(this.isListeningActive ? 'USER_SPEAKING' : 'IDLE');
 
-      // Safely resume microphone listening for candidate answer
-      if (this.isListeningActive && this.recognition) {
+      // Safely resume microphone listening for candidate answer after echo dissipation
+      if (this.isListeningActive && this.recognition && this.fallbackMode === 'speech') {
         try {
           this.recognition.start();
         } catch {
@@ -232,6 +237,14 @@ export class VoiceService {
         }
       }
     }, guardMs);
+  }
+
+  public getTurnTakingGuardMs(): number {
+    return this.config.turnTakingGuardMs ?? 350;
+  }
+
+  public setTurnTakingGuardMs(ms: number): void {
+    this.config.turnTakingGuardMs = Math.max(0, ms);
   }
 
   public getIsAudioLocked(): boolean {
@@ -570,11 +583,11 @@ export class VoiceService {
       utterance.onerror = (ev) => {
         this.isTtsSpeaking = false;
         this.releaseAudioLock();
-        if (ev.error === 'canceled' || ev.error === 'interrupted') {
+        if (ev.error === 'canceled' || ev.error === 'interrupted' || ev.error === 'not-allowed') {
           resolve();
         } else {
-          this.notifyError(`TTS playback error: ${ev.error}`, false);
-          reject(new Error(`TTS error: ${ev.error}`));
+          this.notifyError(`TTS playback notice: ${ev.error}`, false);
+          resolve();
         }
       };
 

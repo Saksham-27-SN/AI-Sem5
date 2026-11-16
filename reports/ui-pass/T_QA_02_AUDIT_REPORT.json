@@ -1,0 +1,322 @@
+[
+  {
+    "route": "live",
+    "url": "http://localhost:5173/interview/live",
+    "viewport": "1920x1080",
+    "width": 1920,
+    "height": 1080,
+    "deviceScaleFactor": 1,
+    "isMobile": false,
+    "overflow": {
+      "scrollWidth": 1920,
+      "innerWidth": 1920,
+      "overflowPx": 0,
+      "pass": true,
+      "overflowingElements": []
+    },
+    "consoleErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrorsCount": 0,
+    "pageErrors": [],
+    "contentCheck": {
+      "absenceOfFullDuplex": true,
+      "hasFullDuplex": false,
+      "presenceOfTurnBasedVoice": true,
+      "hasSubmitAnswerCTA": true,
+      "submitAnswerButtonCount": 1,
+      "hasAgentBadge": true,
+      "hasQuestionCard": true,
+      "passedAllContentCriteria": true
+    },
+    "screenshotFile": "live_1920.png",
+    "screenshotPath": "C:/Users/saksham nagar/InterviewGenie-AI/reports/ui-pass/live/live_1920.png",
+    "fileSizeBytes": 211656
+  },
+  {
+    "route": "live",
+    "url": "http://localhost:5173/interview/live",
+    "viewport": "1280x800",
+    "width": 1280,
+    "height": 800,
+    "deviceScaleFactor": 1,
+    "isMobile": false,
+    "overflow": {
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "overflowPx": 0,
+      "pass": true,
+      "overflowingElements": []
+    },
+    "consoleErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrorsCount": 0,
+    "pageErrors": [],
+    "contentCheck": {
+      "absenceOfFullDuplex": true,
+      "hasFullDuplex": false,
+      "presenceOfTurnBasedVoice": true,
+      "hasSubmitAnswerCTA": true,
+      "submitAnswerButtonCount": 1,
+      "hasAgentBadge": true,
+      "hasQuestionCard": true,
+      "passedAllContentCriteria": true
+    },
+    "screenshotFile": "live_1280.png",
+    "screenshotPath": "C:/Users/saksham nagar/InterviewGenie-AI/reports/ui-pass/live/live_1280.png",
+    "fileSizeBytes": 166773
+  },
+  {
+    "route": "live",
+    "url": "http://localhost:5173/interview/live",
+    "viewport": "1024x768",
+    "width": 1024,
+    "height": 768,
+    "deviceScaleFactor": 1,
+    "isMobile": false,
+    "overflow": {
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "overflowPx": 0,
+      "pass": true,
+      "overflowingElements": []
+    },
+    "consoleErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrorsCount": 0,
+    "pageErrors": [],
+    "contentCheck": {
+      "absenceOfFullDuplex": true,
+      "hasFullDuplex": false,
+      "presenceOfTurnBasedVoice": true,
+      "hasSubmitAnswerCTA": true,
+      "submitAnswerButtonCount": 1,
+      "hasAgentBadge": true,
+      "hasQuestionCard": true,
+      "passedAllContentCriteria": true
+    },
+    "screenshotFile": "live_1024.png",
+    "screenshotPath": "C:/Users/saksham nagar/InterviewGenie-AI/reports/ui-pass/live/live_1024.png",
+    "fileSizeBytes": 147296
+  },
+  {
+    "route": "live",
+    "url": "http://localhost:5173/interview/live",
+    "viewport": "390x844",
+    "width": 390,
+    "height": 844,
+    "deviceScaleFactor": 1,
+    "isMobile": true,
+    "overflow": {
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "overflowPx": 0,
+      "pass": true,
+      "overflowingElements": []
+    },
+    "consoleErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrorsCount": 0,
+    "pageErrors": [],
+    "contentCheck": {
+      "absenceOfFullDuplex": true,
+      "hasFullDuplex": false,
+      "presenceOfTurnBasedVoice": true,
+      "hasSubmitAnswerCTA": true,
+      "submitAnswerButtonCount": 1,
+      "hasAgentBadge": true,
+      "hasQuestionCard": true,
+      "passedAllContentCriteria": true
+    },
+    "screenshotFile": "live_390.png",
+    "screenshotPath": "C:/Users/saksham nagar/InterviewGenie-AI/reports/ui-pass/live/live_390.png",
+    "fileSizeBytes": 98144
+  },
+  {
+    "route": "live",
+    "url": "http://localhost:5173/interview/live",
+    "viewport": "1280x800_zoom125",
+    "width": 1280,
+    "height": 800,
+    "deviceScaleFactor": 1.25,
+    "isMobile": false,
+    "overflow": {
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "overflowPx": 0,
+      "pass": true,
+      "overflowingElements": []
+    },
+    "consoleErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrorsCount": 0,
+    "pageErrors": [],
+    "contentCheck": {
+      "absenceOfFullDuplex": true,
+      "hasFullDuplex": false,
+      "presenceOfTurnBasedVoice": true,
+      "hasSubmitAnswerCTA": true,
+      "submitAnswerButtonCount": 1,
+      "hasAgentBadge": true,
+      "hasQuestionCard": true,
+      "passedAllContentCriteria": true
+    },
+    "screenshotFile": "live_zoom125.png",
+    "screenshotPath": "C:/Users/saksham nagar/InterviewGenie-AI/reports/ui-pass/live/live_zoom125.png",
+    "fileSizeBytes": 605795
+  },
+  {
+    "route": "technical",
+    "url": "http://localhost:5173/interview/technical",
+    "viewport": "1920x1080",
+    "width": 1920,
+    "height": 1080,
+    "deviceScaleFactor": 1,
+    "isMobile": false,
+    "overflow": {
+      "scrollWidth": 1920,
+      "innerWidth": 1920,
+      "overflowPx": 0,
+      "pass": true,
+      "overflowingElements": []
+    },
+    "consoleErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrorsCount": 0,
+    "pageErrors": [],
+    "contentCheck": {
+      "hasCodeEditor": true,
+      "hasLanguageSelector": true,
+      "hasOutputPanel": true,
+      "hasSubmitSolutionCTA": true,
+      "submitSolutionButtonCount": 1,
+      "passedAllContentCriteria": true
+    },
+    "screenshotFile": "technical_1920.png",
+    "screenshotPath": "C:/Users/saksham nagar/InterviewGenie-AI/reports/ui-pass/technical/technical_1920.png",
+    "fileSizeBytes": 242614
+  },
+  {
+    "route": "technical",
+    "url": "http://localhost:5173/interview/technical",
+    "viewport": "1280x800",
+    "width": 1280,
+    "height": 800,
+    "deviceScaleFactor": 1,
+    "isMobile": false,
+    "overflow": {
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "overflowPx": 0,
+      "pass": true,
+      "overflowingElements": []
+    },
+    "consoleErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrorsCount": 0,
+    "pageErrors": [],
+    "contentCheck": {
+      "hasCodeEditor": true,
+      "hasLanguageSelector": true,
+      "hasOutputPanel": true,
+      "hasSubmitSolutionCTA": true,
+      "submitSolutionButtonCount": 1,
+      "passedAllContentCriteria": true
+    },
+    "screenshotFile": "technical_1280.png",
+    "screenshotPath": "C:/Users/saksham nagar/InterviewGenie-AI/reports/ui-pass/technical/technical_1280.png",
+    "fileSizeBytes": 176567
+  },
+  {
+    "route": "technical",
+    "url": "http://localhost:5173/interview/technical",
+    "viewport": "1024x768",
+    "width": 1024,
+    "height": 768,
+    "deviceScaleFactor": 1,
+    "isMobile": false,
+    "overflow": {
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "overflowPx": 0,
+      "pass": true,
+      "overflowingElements": []
+    },
+    "consoleErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrorsCount": 0,
+    "pageErrors": [],
+    "contentCheck": {
+      "hasCodeEditor": true,
+      "hasLanguageSelector": true,
+      "hasOutputPanel": true,
+      "hasSubmitSolutionCTA": true,
+      "submitSolutionButtonCount": 1,
+      "passedAllContentCriteria": true
+    },
+    "screenshotFile": "technical_1024.png",
+    "screenshotPath": "C:/Users/saksham nagar/InterviewGenie-AI/reports/ui-pass/technical/technical_1024.png",
+    "fileSizeBytes": 155446
+  },
+  {
+    "route": "technical",
+    "url": "http://localhost:5173/interview/technical",
+    "viewport": "390x844",
+    "width": 390,
+    "height": 844,
+    "deviceScaleFactor": 1,
+    "isMobile": true,
+    "overflow": {
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "overflowPx": 0,
+      "pass": true,
+      "overflowingElements": []
+    },
+    "consoleErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrorsCount": 0,
+    "pageErrors": [],
+    "contentCheck": {
+      "hasCodeEditor": true,
+      "hasLanguageSelector": true,
+      "hasOutputPanel": true,
+      "hasSubmitSolutionCTA": true,
+      "submitSolutionButtonCount": 1,
+      "passedAllContentCriteria": true
+    },
+    "screenshotFile": "technical_390.png",
+    "screenshotPath": "C:/Users/saksham nagar/InterviewGenie-AI/reports/ui-pass/technical/technical_390.png",
+    "fileSizeBytes": 84088
+  },
+  {
+    "route": "technical",
+    "url": "http://localhost:5173/interview/technical",
+    "viewport": "1280x800_zoom125",
+    "width": 1280,
+    "height": 800,
+    "deviceScaleFactor": 1.25,
+    "isMobile": false,
+    "overflow": {
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "overflowPx": 0,
+      "pass": true,
+      "overflowingElements": []
+    },
+    "consoleErrorsCount": 0,
+    "consoleErrors": [],
+    "pageErrorsCount": 0,
+    "pageErrors": [],
+    "contentCheck": {
+      "hasCodeEditor": true,
+      "hasLanguageSelector": true,
+      "hasOutputPanel": true,
+      "hasSubmitSolutionCTA": true,
+      "submitSolutionButtonCount": 1,
+      "passedAllContentCriteria": true
+    },
+    "screenshotFile": "technical_zoom125.png",
+    "screenshotPath": "C:/Users/saksham nagar/InterviewGenie-AI/reports/ui-pass/technical/technical_zoom125.png",
+    "fileSizeBytes": 224903
+  }
+]

@@ -27,30 +27,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     async function loadUser() {
       const storedToken = localStorage.getItem('token');
-      if (storedToken) {
+      if (storedToken && !storedToken.startsWith('demo_')) {
         try {
           const me = await api.getMe();
           if (isMounted) setUser(me);
         } catch {
-          // If token expired or network issue, fallback to mock demo user for seamless UX
+          // If token expired, clear invalid token
+          localStorage.removeItem('token');
           if (isMounted) {
-            setUser({
-              id: 'usr_candidate_default',
-              email: 'candidate@interviewgenie.ai',
-              full_name: 'Alex Johnson',
-            });
+            setUser(null);
+            setToken(null);
           }
         }
       } else {
-        // By default, initialize with Demo candidate so all rooms can be explored immediately
-        const demoUser: User = {
-          id: 'usr_candidate_default',
-          email: 'candidate@interviewgenie.ai',
-          full_name: 'Alex Johnson',
-        };
-        setUser(demoUser);
-        setToken('demo_token_mock_2026');
-        localStorage.setItem('token', 'demo_token_mock_2026');
+        if (isMounted) {
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem('token');
+        }
       }
       if (isMounted) setIsLoading(false);
     }

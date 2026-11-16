@@ -257,9 +257,75 @@ class AptitudeAgent(BaseAgent):
                 "category": q["category"],
                 "difficulty": q["difficulty"],
                 "question": q["question"],
-                "options": q["options"]
+                "options": dict(q["options"])
             })
         return questions
+
+    def get_question(self, index: int = 0, difficulty: str = "medium") -> Dict[str, Any]:
+        """Returns single question formatted for coordinator_agent interview session."""
+        diff_lower = (difficulty or "medium").lower().strip()
+        matching = [q for q in self.VERIFIED_APTITUDE_BANK if q["difficulty"].lower() == diff_lower]
+        if not matching:
+            matching = self.VERIFIED_APTITUDE_BANK
+        q = matching[index % len(matching)]
+        return {
+            "id": q["id"],
+            "question_text": q["question"],
+            "category": q["category"],
+            "difficulty": q["difficulty"],
+            "options": dict(q["options"]),
+            "expected_criteria": ["Select correct logical or quantitative choice"]
+        }
+
+    def grade_single_answer(self, question_text_or_id: str, user_answer: str) -> Dict[str, Any]:
+        """Deterministically evaluates a single aptitude answer for coordinator turns."""
+        target = None
+        # Try match by ID
+        for q in self.VERIFIED_APTITUDE_BANK:
+            if q["id"] == question_text_or_id or q["id"].replace("apt_", "") == question_text_or_id:
+                target = q
+                break
+        # Try match by question text
+        if not target:
+            clean_q = question_text_or_id.strip().lower()
+            for q in self.VERIFIED_APTITUDE_BANK:
+                if q["question"].strip().lower() == clean_q or clean_q in q["question"].strip().lower():
+                    target = q
+                    break
+        
+        if not target:
+            # Fallback if question not in bank
+            return {
+                "score": 75.0,
+                "relevance_score": 75.0,
+                "clarity_score": 75.0,
+                "technical_depth_score": 75.0,
+                "feedback": "Answer recorded.",
+                "strengths": ["Completed aptitude response"],
+                "improvements": []
+            }
+        
+        # Check answer against correct option or option text
+        cleaned_ans = (user_answer or "").strip()
+        opt_key = target["correct_option"]
+        correct_text = target["options"].get(opt_key, "")
+        
+        is_correct = (
+            cleaned_ans.upper() == opt_key or
+            cleaned_ans.lower() == correct_text.lower() or
+            cleaned_ans.upper().startswith(f"{opt_key}:") or
+            cleaned_ans.upper().startswith(f"{opt_key})")
+        )
+        score = 100.0 if is_correct else 0.0
+        return {
+            "score": score,
+            "relevance_score": 100.0 if is_correct else 40.0,
+            "clarity_score": 100.0 if is_correct else 50.0,
+            "technical_depth_score": score,
+            "feedback": f"Correct! {target['explanation']}" if is_correct else f"Incorrect. Correct answer is {opt_key} ({correct_text}). {target['explanation']}",
+            "strengths": ["Selected correct analytical option", "Sound quantitative logic"] if is_correct else ["Attempted problem"],
+            "improvements": [] if is_correct else [f"Review {target['category']} fundamentals: {target['explanation']}"]
+        }
 
     def grade_submission(
         self,

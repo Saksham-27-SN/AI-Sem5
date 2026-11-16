@@ -9,8 +9,21 @@ class BaseAgent:
         self.name = name
         self.role = role
 
+    @staticmethod
+    def safe_float(val: Any, default: float = 0.0) -> float:
+        """Safely converts value to float with fallback."""
+        if val is None:
+            return default
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return default
+
     def clean_json_response(self, text: str) -> Dict[str, Any]:
         """Extracts and parses JSON object from LLM response text."""
+        if not text:
+            return {"parse_error": True, "raw_content": ""}
+
         text = text.strip()
         # Remove markdown code fence if present
         if text.startswith("```"):
@@ -20,15 +33,19 @@ class BaseAgent:
             if lines and lines[-1].strip() == "```":
                 lines = lines[:-1]
             text = "\n".join(lines).strip()
-            
+
+        # Clean trailing commas before ] or }
+        cleaned_text = re.sub(r',\s*([\]}])', r'\1', text)
         try:
-            return json.loads(text)
+            return json.loads(cleaned_text)
         except json.JSONDecodeError:
             # Fallback regex search for { ... }
             match = re.search(r'(\{.*\})', text, re.DOTALL)
             if match:
+                matched_str = match.group(1)
+                matched_cleaned = re.sub(r',\s*([\]}])', r'\1', matched_str)
                 try:
-                    return json.loads(match.group(1))
+                    return json.loads(matched_cleaned)
                 except Exception:
                     pass
             # If all fails, return structured dict

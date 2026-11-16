@@ -188,3 +188,52 @@ export interface ToastMessage {
   message?: string;
   duration?: number;
 }
+
+// --- Analytics Types ---
+export interface ScoreProgressionPoint {
+  session_id: string;
+  session_number: number;
+  date: string;
+  interview_type: string;
+  role: string;
+  overall_score: number;
+  technical_score?: number;
+  communication_score?: number;
+  problem_solving_score?: number;
+}
+
+export interface RoundComparisonItem {
+  round: string;
+  interview_type: string;
+  average_score: number;
+  sessions_count: number;
+  benchmark: number;
+}
+
+export interface CompetencyRadarItem {
+  competency: string;
+  candidate_score: number;
+  benchmark_score: number;
+  full_mark: number;
+}
+
+export interface AnalyticsSummary {
+  total_interviews: number;
+  average_score: number;
+  highest_score: number;
+  completion_rate: number;
+  total_practice_minutes: number;
+  readiness_status: string;
+  readiness_percentage: number;
+}
+
+export interface AnalyticsResponse {
+  summary: AnalyticsSummary;
+  score_progression: ScoreProgressionPoint[];
+  round_comparison: RoundComparisonItem[];
+  competencies: CompetencyRadarItem[];
+  strengths: string[];
+  weaknesses: string[];
+  recommended_next_action: string;
+}
+

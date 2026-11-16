@@ -10,7 +10,8 @@ from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user_id
 from backend.app.core.config import settings
 from backend.app.models.models import MediaConsent, InterviewSession
-from backend.app.schemas.schemas import MediaConsentRequest, MediaConsentResponse
+from backend.app.schemas.schemas import MediaConsentRequest, MediaConsentResponse, MediaCleanupResponse
+from backend.app.services.media_cleanup_service import media_cleanup_service
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +136,29 @@ def delete_interview_recordings(
     Permanently purges all audio/video recording artifacts for the given interview,
     ensuring full GDPR and candidate privacy compliance.
     """
+    if interview_id == "all":
+        interviews = db.query(InterviewSession).filter(InterviewSession.user_id == user_id).all()
+        total_purged = 0
+        total_freed = 0
+        for session_item in interviews:
+            cleanup_res = media_cleanup_service.cleanup_interview_recordings(
+                interview_id=session_item.id,
+                user_id=user_id,
+                db=db
+            )
+            total_purged += cleanup_res.get("purged_count", 0)
+            total_freed += cleanup_res.get("freed_bytes", 0)
+        orphaned_res = media_cleanup_service.cleanup_purged_recordings(db=db, user_id=user_id)
+        total_purged += orphaned_res.get("orphaned_files_removed", 0)
+        total_freed += orphaned_res.get("freed_bytes", 0)
+        return {
+            "message": "All media recordings and artifacts have been permanently deleted.",
+            "interview_id": "all",
+            "deleted": True,
+            "purged_artifacts_count": total_purged,
+            "freed_bytes": total_freed
+        }
+
     interview = db.query(InterviewSession).filter(
         InterviewSession.id == interview_id,
         InterviewSession.user_id == user_id
@@ -145,49 +169,35 @@ def delete_interview_recordings(
             detail="Interview session not found."
         )
 
-    deleted_paths = []
-    consent = db.query(MediaConsent).filter(
-        MediaConsent.interview_id == interview_id,
-        MediaConsent.user_id == user_id
-    ).first()
-
-    # Purge referenced file path if present
-    if consent and consent.recording_file_path and os.path.exists(consent.recording_file_path):
-        try:
-            os.remove(consent.recording_file_path)
-            deleted_paths.append(consent.recording_file_path)
-        except Exception as e:
-            logger.warning(f"Failed to remove recording file {consent.recording_file_path}: {e}")
-
-    # Search recordings directory for any files matching interview ID
-    recordings_dir = settings.RECORDINGS_DIR
-    if os.path.exists(recordings_dir):
-        try:
-            for item in os.listdir(recordings_dir):
-                if interview_id in item:
-                    item_path = os.path.join(recordings_dir, item)
-                    try:
-                        if os.path.isfile(item_path):
-                            os.remove(item_path)
-                            deleted_paths.append(item_path)
-                        elif os.path.isdir(item_path):
-                            shutil.rmtree(item_path)
-                            deleted_paths.append(item_path)
-                    except Exception as e:
-                        logger.warning(f"Failed to delete recording artifact {item_path}: {e}")
-        except Exception as e:
-            logger.warning(f"Error scanning recordings directory: {e}")
-
-    # Mark consent recording as purged in database
-    if consent:
-        consent.recording_file_path = None
-        consent.recording_duration_seconds = 0
-        consent.is_deleted = True
-        db.commit()
+    cleanup_res = media_cleanup_service.cleanup_interview_recordings(
+        interview_id=interview_id,
+        user_id=user_id,
+        db=db
+    )
 
     return {
         "message": f"All media recordings and artifacts for interview {interview_id} have been permanently deleted.",
         "interview_id": interview_id,
         "deleted": True,
-        "purged_artifacts_count": len(deleted_paths)
+        "purged_artifacts_count": cleanup_res.get("purged_count", 0),
+        "freed_bytes": cleanup_res.get("freed_bytes", 0)
     }
+
+@router.post("/cleanup", response_model=MediaCleanupResponse)
+def cleanup_purged_media(
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Sweeps and permanently removes all orphaned or marked-for-deletion media artifacts,
+    ensuring privacy guarantees and reclaiming candidate storage quota.
+    """
+    res = media_cleanup_service.cleanup_purged_recordings(db=db, user_id=user_id)
+    return MediaCleanupResponse(
+        status=res.get("status", "success"),
+        message=res.get("message", "Media cleanup completed."),
+        purged_sessions_cleaned=res.get("purged_sessions_cleaned", 0),
+        orphaned_files_removed=res.get("orphaned_files_removed", 0),
+        freed_bytes=res.get("freed_bytes", 0),
+        freed_mb=res.get("freed_mb", 0.0)
+    )

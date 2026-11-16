@@ -18,7 +18,7 @@ def setup_database():
     yield
 
 def test_health_endpoints():
-    """Verify root and health check endpoints."""
+    """Verify root, health check endpoints, and CORS readiness for frontend localhost:5173."""
     res_root = client.get("/")
     assert res_root.status_code == 200
     data_root = res_root.json()
@@ -30,6 +30,30 @@ def test_health_endpoints():
     data_health = res_health.json()
     assert data_health["status"] == "healthy"
     assert "timestamp" in data_health
+
+    # Health alias
+    res_alias = client.get("/health")
+    assert res_alias.status_code == 200
+    assert res_alias.json()["status"] == "healthy"
+
+    # CORS verification for localhost:5173
+    cors_res = client.get("/api/health", headers={"Origin": "http://localhost:5173"})
+    assert cors_res.status_code == 200
+    assert cors_res.headers.get("access-control-allow-origin") == "http://localhost:5173"
+    assert cors_res.headers.get("access-control-allow-credentials") == "true"
+
+    # CORS preflight OPTIONS request
+    preflight = client.options(
+        "/api/health",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "authorization,content-type"
+        }
+    )
+    assert preflight.status_code == 200
+    assert preflight.headers.get("access-control-allow-origin") == "http://localhost:5173"
+    assert preflight.headers.get("access-control-allow-credentials") == "true"
 
 def test_auth_and_profile_flow():
     """Test user registration, login, and profile update."""
@@ -100,8 +124,14 @@ def test_aptitude_flow():
     res_cat = client.get("/api/aptitude/test?category=quantitative&count=3")
     assert res_cat.status_code == 200
     cat_questions = res_cat.json()
+    assert len(cat_questions) == 3
     for q in cat_questions:
         assert "quantitative" in q["category"].lower()
+
+    # Retrieve all 15 seeded questions across all categories
+    res_all = client.get("/api/aptitude/test?category=all&count=15")
+    assert res_all.status_code == 200
+    assert len(res_all.json()) == 15
 
     # Submit answers for deterministic grading
     # apt_q1 correct is "B", apt_q2 correct is "A"
@@ -193,6 +223,15 @@ def test_media_and_consent_flow():
     assert del_data["deleted"] is True
     assert del_data["interview_id"] == interview_id
 
+    # 5. Media cleanup service sweep
+    clean_res = client.post("/api/media/cleanup", headers=headers)
+    assert clean_res.status_code == 200
+    clean_data = clean_res.json()
+    assert clean_data["status"] == "success"
+    assert "message" in clean_data
+    assert "purged_sessions_cleaned" in clean_data
+    assert "freed_mb" in clean_data
+
 def test_interview_session_and_evaluation_flow():
     """Test full interview turn execution, state machine, evaluation, and PDF report download."""
     email = "interviewee_backend@example.com"
@@ -275,4 +314,21 @@ def test_interview_session_and_evaluation_flow():
     assert pdf_res.status_code == 200
     assert pdf_res.headers["content-type"] == "application/pdf"
     assert len(pdf_res.content) > 1000  # valid non-empty PDF bytes
+
+    # 8. Retrieve full dialogue transcript in JSON and text format
+    trans_json_res = client.get(f"/api/interviews/{interview_id}/transcript", headers=headers)
+    assert trans_json_res.status_code == 200
+    trans_data = trans_json_res.json()
+    assert trans_data["interview_id"] == interview_id
+    assert "transcript_text" in trans_data
+    assert len(trans_data["transcript_text"]) > 10
+    assert "dialogue" in trans_data
+    assert len(trans_data["dialogue"]) >= 1
+    assert "dialogue_json" in trans_data
+
+    # Transcript plain text export
+    trans_txt_res = client.get(f"/api/interviews/{interview_id}/transcript?format=text", headers=headers)
+    assert trans_txt_res.status_code == 200
+    assert "text/plain" in trans_txt_res.headers.get("content-type", "")
+    assert len(trans_txt_res.text) > 10
 

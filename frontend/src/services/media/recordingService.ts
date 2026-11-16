@@ -370,15 +370,20 @@ export class RecordingService {
 
   /**
    * Initiates browser download of the recorded audio/video file.
+   * Supports explicit .webm or .mp4 download format.
    */
-  public downloadRecording(filename?: string): void {
+  public downloadRecording(filename?: string, format?: 'webm' | 'mp4'): void {
     if (!this.lastRecordedMedia) {
       throw new Error('No recorded media available for download.');
     }
 
-    const ext = this.lastRecordedMedia.mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const detectedExt = this.lastRecordedMedia.mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const ext = format || detectedExt;
     const defaultName = `interview-${this.consent.interviewId || 'session'}-${Date.now()}.${ext}`;
-    const finalName = filename || defaultName;
+    let finalName = filename || defaultName;
+    if (format && !finalName.endsWith(`.${format}`)) {
+      finalName = finalName.replace(/\.[^/.]+$/, '') + `.${format}`;
+    }
 
     const link = document.createElement('a');
     link.href = this.lastRecordedMedia.url;

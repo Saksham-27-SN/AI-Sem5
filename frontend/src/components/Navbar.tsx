@@ -1,5 +1,5 @@
 // src/components/Navbar.tsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -11,6 +11,7 @@ import {
   FileText,
   Award,
   Clock,
+  TrendingUp,
   User as UserIcon,
   LogOut,
   LogIn,
@@ -18,6 +19,7 @@ import {
   X,
   Play,
   Sliders,
+  ChevronDown,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -26,16 +28,52 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
 
-  const navLinks = [
+  const moreRef = useRef<HTMLDivElement>(null);
+  const userRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside click or Escape key
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
+        setMoreDropdownOpen(false);
+      }
+      if (userRef.current && !userRef.current.contains(event.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMoreDropdownOpen(false);
+        setUserDropdownOpen(false);
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Primary navigation items (compact short labels to guarantee fit across 1024px, 1280px, and 1440px)
+  const primaryNavLinks = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Setup', path: '/setup', icon: Sliders },
-    { label: 'Live HR Room', path: '/interview/live', icon: Video },
-    { label: 'Technical Room', path: '/interview/technical', icon: Code },
-    { label: 'Aptitude Room', path: '/interview/aptitude', icon: Brain },
-    { label: 'Resume Upload', path: '/resume', icon: FileText },
-    { label: 'Results', path: '/results', icon: Award },
-    { label: 'History', path: '/history', icon: Clock },
+    { label: 'Live Room', path: '/interview/live', icon: Video },
+    { label: 'Tech IDE', path: '/interview/technical', icon: Code },
+    { label: 'Aptitude', path: '/interview/aptitude', icon: Brain },
+    { label: 'Resume', path: '/resume', icon: FileText },
+  ];
+
+  // Secondary items cleanly grouped under 'More'
+  const secondaryNavLinks = [
+    { label: 'Results & Rubrics', path: '/results', icon: Award },
+    { label: 'Analytics & Trends', path: '/analytics', icon: TrendingUp },
+    { label: 'Session History', path: '/history', icon: Clock },
   ];
 
   const isActive = (path: string) => {
@@ -44,113 +82,161 @@ export const Navbar: React.FC = () => {
     return false;
   };
 
+  const isMoreActive = secondaryNavLinks.some((item) => isActive(item.path));
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-gray-800/80 bg-[#0B0F19]/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-[#1E293B] bg-[#0B0F19]/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand / Logo */}
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:shadow-blue-500/40 transition-all duration-300">
-              <Sparkles className="w-5 h-5 text-white animate-pulse" />
+        <div className="flex items-center gap-3 lg:gap-6 shrink-0">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 group rounded-xl p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            aria-label="InterviewGenie AI Home"
+          >
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-all duration-150">
+              <Sparkles className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                InterviewGenie <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-medium">AI</span>
-              </span>
-              <span className="hidden sm:block text-[10px] text-gray-400 font-medium tracking-wider uppercase -mt-0.5">
-                Multi-Agent Simulator
+              <span className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
+                InterviewGenie{' '}
+                <span className="text-xs px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30 font-semibold">
+                  AI
+                </span>
               </span>
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden xl:flex items-center gap-1 ml-4">
-            {navLinks.map((item) => {
+          {/* Desktop Nav Links (14px font, WCAG AA contrast) */}
+          <nav className="hidden xl:flex items-center gap-1" aria-label="Main Navigation">
+            {primaryNavLinks.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-150 flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     active
-                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30'
+                      ? 'bg-blue-600/15 text-blue-300 border border-blue-500/40'
                       : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${active ? 'text-blue-400' : 'text-gray-400'}`} />
-                  {item.label}
+                  <Icon className={`w-4 h-4 ${active ? 'text-blue-400' : 'text-gray-400'}`} />
+                  <span>{item.label}</span>
                 </Link>
               );
             })}
+
+            {/* Secondary 'More' Dropdown */}
+            <div className="relative" ref={moreRef}>
+              <button
+                onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
+                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-150 flex items-center gap-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                  isMoreActive
+                    ? 'bg-blue-600/15 text-blue-300 border border-blue-500/40'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
+                }`}
+                aria-expanded={moreDropdownOpen}
+                aria-haspopup="true"
+              >
+                <span>More</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-150 ${
+                    moreDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {moreDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-52 rounded-2xl bg-[#131B2E] border border-[#1E293B] shadow-2xl py-1.5 z-50 text-sm">
+                  {secondaryNavLinks.map((subItem) => {
+                    const SubIcon = subItem.icon;
+                    const subActive = isActive(subItem.path);
+                    return (
+                      <Link
+                        key={subItem.path}
+                        to={subItem.path}
+                        onClick={() => setMoreDropdownOpen(false)}
+                        className={`flex items-center gap-2.5 px-3.5 py-2 transition-colors duration-150 ${
+                          subActive
+                            ? 'bg-blue-600/20 text-blue-300 font-semibold'
+                            : 'text-gray-300 hover:bg-gray-800/60 hover:text-white'
+                        }`}
+                      >
+                        <SubIcon className="w-4 h-4 text-gray-400" />
+                        <span>{subItem.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </nav>
         </div>
 
-        {/* Right Action / Auth Controls */}
+        {/* Right Action Controls: 1 Single Primary CTA ("Start Practice") & Profile */}
         <div className="flex items-center gap-3">
-          {/* Readiness Score Pill */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-surface border border-gray-800 text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span className="text-gray-400">Readiness:</span>
-            <span className="font-semibold text-emerald-400">88% (Strong)</span>
-          </div>
-
-          {/* Quick Launch Button */}
+          {/* Single Main Primary CTA Button with Gradient */}
           <Link
             to="/setup"
-            className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-md shadow-blue-500/20 transition-all duration-200"
+            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white text-sm font-semibold shadow-md shadow-blue-500/20 hover:shadow-blue-500/30 border border-blue-400/30 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shrink-0"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>Start Practice</span>
           </Link>
 
-          {/* User Profile Menu */}
+          {/* User Profile / Auth Button */}
           {isAuthenticated && user ? (
-            <div className="relative">
+            <div className="relative" ref={userRef}>
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-800/60 border border-transparent hover:border-gray-700 transition-all text-xs text-gray-200"
+                className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-gray-800/60 border border-transparent hover:border-gray-700 transition-all duration-150 text-sm text-gray-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                aria-label="User Account Menu"
+                aria-expanded={userDropdownOpen}
+                aria-haspopup="true"
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs uppercase shadow-inner">
+                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs uppercase">
                   {user.full_name ? user.full_name.slice(0, 2) : 'AJ'}
                 </div>
-                <span className="hidden lg:block font-medium max-w-[120px] truncate">
+                <span className="hidden xl:block font-medium max-w-[120px] truncate text-gray-200">
                   {user.full_name}
                 </span>
+                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
               </button>
 
               {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-xl glass-dropdown py-1.5 text-xs text-gray-200 border border-gray-800 shadow-2xl z-50 animate-fade-in">
-                  <div className="px-4 py-2 border-b border-gray-800/80">
-                    <p className="font-semibold text-white">{user.full_name}</p>
-                    <p className="text-gray-400 truncate">{user.email}</p>
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#131B2E] border border-[#1E293B] shadow-2xl py-2 text-sm text-gray-200 z-50">
+                  <div className="px-4 py-2 border-b border-[#1E293B]">
+                    <p className="font-semibold text-white truncate">{user.full_name}</p>
+                    <p className="text-gray-400 text-xs truncate mt-0.5">{user.email}</p>
                   </div>
                   <Link
                     to="/profile"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-800/60 text-gray-300 hover:text-white transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-800/60 text-gray-300 hover:text-white transition-colors duration-150"
                   >
-                    <UserIcon className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Candidate Profile & Privacy</span>
+                    <UserIcon className="w-4 h-4 text-blue-400" />
+                    <span>Candidate Profile</span>
                   </Link>
                   <Link
                     to="/dashboard"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-800/60 text-gray-300 hover:text-white transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-800/60 text-gray-300 hover:text-white transition-colors duration-150"
                   >
-                    <LayoutDashboard className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>My Dashboard</span>
+                    <LayoutDashboard className="w-4 h-4 text-indigo-400" />
+                    <span>Dashboard</span>
                   </Link>
-                  <div className="my-1 border-t border-gray-800/80"></div>
+                  <div className="my-1 border-t border-[#1E293B]"></div>
                   <button
                     onClick={() => {
                       logout();
                       setUserDropdownOpen(false);
                       navigate('/');
                     }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-rose-950/40 text-rose-400 transition-colors text-left"
+                    className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-rose-950/40 text-rose-400 transition-colors duration-150 text-left cursor-pointer"
                   >
-                    <LogOut className="w-3.5 h-3.5" />
+                    <LogOut className="w-4 h-4" />
                     <span>Sign Out</span>
                   </button>
                 </div>
@@ -159,18 +245,19 @@ export const Navbar: React.FC = () => {
           ) : (
             <Link
               to="/auth"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-700 hover:border-gray-600 bg-gray-800/40 text-gray-200 text-xs font-medium hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#1E293B] hover:border-gray-600 bg-[#131B2E] text-gray-200 text-sm font-medium hover:text-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
-              <LogIn className="w-3.5 h-3.5" />
+              <LogIn className="w-4 h-4" />
               <span>Sign In</span>
             </Link>
           )}
 
-          {/* Mobile hamburger toggle */}
+          {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="xl:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            className="xl:hidden p-2 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer"
             aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -179,8 +266,8 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="xl:hidden border-t border-gray-800 bg-[#0B0F19]/95 backdrop-blur-xl px-4 py-4 space-y-1">
-          {navLinks.map((item) => {
+        <div className="xl:hidden border-t border-[#1E293B] bg-[#0B0F19]/98 px-4 py-4 space-y-1">
+          {[...primaryNavLinks, ...secondaryNavLinks].map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
             return (
@@ -188,25 +275,25 @@ export const Navbar: React.FC = () => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${
                   active
-                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+                    ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40'
                     : 'text-gray-300 hover:bg-gray-800/60 hover:text-white'
                 }`}
               >
                 <Icon className={`w-4 h-4 ${active ? 'text-blue-400' : 'text-gray-400'}`} />
-                {item.label}
+                <span>{item.label}</span>
               </Link>
             );
           })}
-          <div className="pt-2 border-t border-gray-800 mt-2">
+          <div className="pt-2 border-t border-[#1E293B] mt-2">
             <Link
               to="/setup"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-blue-600 text-white font-medium text-sm shadow-md"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white font-semibold text-sm shadow-md shadow-blue-500/20"
             >
               <Play className="w-4 h-4 fill-current" />
-              Start New Simulation
+              <span>Start Practice</span>
             </Link>
           </div>
         </div>

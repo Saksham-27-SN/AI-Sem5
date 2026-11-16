@@ -14,6 +14,7 @@ import type {
   TTSOptions,
   CameraState,
   MediaDeviceItem,
+  PermissionStatusSummary,
   RecordingState,
   RecordingConsent,
   RecordedMedia,
@@ -22,6 +23,10 @@ import type {
 import { voiceService } from './voiceService.ts';
 import { cameraService } from './cameraService.ts';
 import { recordingService } from './recordingService.ts';
+import { playSpeakerChime } from './audioUtils.ts';
+
+// Re-export audio chime utility
+export { playSpeakerChime };
 
 // ==========================================
 // 1. useVoice Hook
@@ -54,7 +59,9 @@ export function useVoice(options: UseVoiceOptions = {}) {
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(voiceService.getSelectedVoice());
 
   const optionsRef = useRef(options);
-  optionsRef.current = options;
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
 
   useEffect(() => {
     // Subscribe to status changes
@@ -190,6 +197,7 @@ export interface UseCameraOptions {
 
 export function useCamera(options: UseCameraOptions = {}) {
   const [cameraState, setCameraState] = useState<CameraState>(cameraService.getState());
+  const [permissions, setPermissions] = useState<PermissionStatusSummary>(cameraService.getPermissions());
   const [stream, setStream] = useState<MediaStream | null>(cameraService.getStream());
   const [videoDevices, setVideoDevices] = useState<MediaDeviceItem[]>([]);
   const [audioDevices, setAudioDevices] = useState<MediaDeviceItem[]>([]);
@@ -200,6 +208,10 @@ export function useCamera(options: UseCameraOptions = {}) {
     const unsubState = cameraService.onStateChange((state) => {
       setCameraState(state);
       setStream(cameraService.getStream());
+    });
+
+    const unsubPerms = cameraService.onPermissionChange((perms) => {
+      setPermissions(perms);
     });
 
     const loadDevices = async () => {
@@ -223,6 +235,7 @@ export function useCamera(options: UseCameraOptions = {}) {
 
     return () => {
       unsubState();
+      unsubPerms();
     };
   }, [options.autoStart, options.constraints]);
 
@@ -273,13 +286,17 @@ export function useCamera(options: UseCameraOptions = {}) {
     }
   }, []);
 
+  const micLevel = useMicLevel(stream, !cameraState.isMicrophoneMuted);
+
   return {
     videoRef,
     stream,
     cameraState,
+    permissions,
     videoDevices,
     audioDevices,
     isLoading,
+    micLevel,
     isCameraMuted: cameraState.isCameraMuted,
     isMicrophoneMuted: cameraState.isMicrophoneMuted,
     error: cameraState.error,
@@ -376,8 +393,8 @@ export function useRecording(options: UseRecordingOptions = {}) {
     }
   }, []);
 
-  const downloadRecording = useCallback((filename?: string) => {
-    recordingService.downloadRecording(filename);
+  const downloadRecording = useCallback((filename?: string, format?: 'webm' | 'mp4') => {
+    recordingService.downloadRecording(filename, format);
   }, []);
 
   const deleteRecording = useCallback(async (authToken?: string, syncWithBackend = true) => {
@@ -409,4 +426,94 @@ export function useRecording(options: UseRecordingOptions = {}) {
     downloadRecording,
     deleteRecording,
   };
+}
+
+// ==========================================
+// 4. useMicLevel Hook (Hardware Diagnostics)
+// ==========================================
+
+export function useMicLevel(stream: MediaStream | null, enabled: boolean = true): number {
+  const [level, setLevel] = useState<number>(0);
+
+  useEffect(() => {
+    if (!stream || !enabled || typeof window === 'undefined') {
+      setLevel(0);
+      return;
+    }
+
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0 || !audioTracks[0].enabled) {
+      setLevel(0);
+      return;
+    }
+
+    let audioContext: AudioContext | null = null;
+    let analyser: AnalyserNode | null = null;
+    let source: MediaStreamAudioSourceNode | null = null;
+    let animId: number | null = null;
+    let isMounted = true;
+
+    try {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+
+      if (!AudioCtx) return;
+
+      audioContext = new AudioCtx();
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().catch(() => {});
+      }
+
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.35;
+
+      source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      const updateMeter = () => {
+        if (!isMounted || !analyser) return;
+
+        analyser.getByteFrequencyData(dataArray);
+
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i];
+        }
+        const avg = sum / bufferLength;
+        // Sensitivity scaling for human voice range (0 - 100)
+        const scaled = Math.min(100, Math.round((avg / 128) * 100 * 1.6));
+        setLevel(scaled);
+
+        animId = requestAnimationFrame(updateMeter);
+      };
+
+      updateMeter();
+    } catch (err) {
+      console.warn('Microphone level analyser error:', err);
+    }
+
+    return () => {
+      isMounted = false;
+      if (animId) {
+        cancelAnimationFrame(animId);
+      }
+      try {
+        source?.disconnect();
+        analyser?.disconnect();
+        if (audioContext && audioContext.state !== 'closed') {
+          audioContext.close();
+        }
+      } catch {
+        // Ignored
+      }
+      setLevel(0);
+    };
+  }, [stream, enabled]);
+
+  return level;
 }

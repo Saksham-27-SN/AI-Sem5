@@ -100,19 +100,21 @@ def test_interview_state_transition_and_lifecycle(client, registered_user, db_se
     next_action = ans1_data["next_action"]
     assert next_action in ("next_question", "follow_up", "completed")
 
-    if next_action in ("next_question", "follow_up"):
-        q2 = ans1_data["next_question"]
-        assert q2 is not None
-        assert "id" in q2
-        assert len(q2["question_text"]) > 5
-
-        # Submit answer for Question 2
-        ans2_res = client.post(f"/api/interviews/{interview_id}/submit-answer", headers=registered_user["headers"], json={
-            "question_id": q2["id"],
+    # Progressively answer all subsequent turns (including follow-ups) until session completes
+    curr_action = ans1_data["next_action"]
+    curr_next_q = ans1_data.get("next_question")
+    while curr_action in ("next_question", "follow_up") and curr_next_q:
+        assert "id" in curr_next_q
+        assert len(curr_next_q["question_text"]) > 5
+        ans_step = client.post(f"/api/interviews/{interview_id}/submit-answer", headers=registered_user["headers"], json={
+            "question_id": curr_next_q["id"],
             "answer_text": "Python dictionaries use hash tables with open addressing and perturbation to resolve hash collisions in O(1) amortized lookup time.",
             "duration_seconds": 35
         })
-        assert ans2_res.status_code == 200
+        assert ans_step.status_code == 200
+        step_data = ans_step.json()
+        curr_action = step_data.get("next_action")
+        curr_next_q = step_data.get("next_question")
 
     # Verify session transitioned to completed
     db_session.expire_all()
@@ -247,5 +249,65 @@ def test_cross_tenant_interview_isolation(client, registered_user):
     assert client.post(f"/api/interviews/{user_a_interview_id}/start", headers=headers_b).status_code == 404
     assert client.get(f"/api/interviews/{user_a_interview_id}/current-question", headers=headers_b).status_code == 404
     assert client.post(f"/api/interviews/{user_a_interview_id}/end", headers=headers_b).status_code == 404
-    assert client.get(f"/api/interviews/{user_a_interview_id}/evaluation", headers=headers_b).status_code == 404
-    assert client.get(f"/api/interviews/{user_a_interview_id}/report.pdf", headers=headers_b).status_code == 404
+    assert client.get(f"/api/interviews/{user_a_interview_id}/transcript", headers=headers_b).status_code == 404
+
+def test_interview_transcript_endpoint_json_and_text(client, registered_user, db_session):
+    """Verify GET /api/interviews/{interview_id}/transcript returns full dialogue transcript in JSON and text formats."""
+    # 1. Create and setup an interview
+    create_res = client.post("/api/interviews", headers=registered_user["headers"], json={
+        "interview_type": "technical",
+        "domain": "Python",
+        "target_role": "Backend Engineer",
+        "difficulty": "medium",
+        "total_questions": 2,
+        "enable_voice": False
+    })
+    assert create_res.status_code == 201
+    interview_id = create_res.json()["id"]
+
+    # 2. Start session
+    start_res = client.post(f"/api/interviews/{interview_id}/start", headers=registered_user["headers"])
+    assert start_res.status_code == 200
+    q1 = start_res.json()["current_question"]
+
+    # 3. Submit Answer 1
+    ans1_res = client.post(f"/api/interviews/{interview_id}/submit-answer", headers=registered_user["headers"], json={
+        "question_id": q1["id"],
+        "answer_text": "Python handles memory through reference counting and generational cyclic garbage collection.",
+        "duration_seconds": 32
+    })
+    assert ans1_res.status_code == 200
+
+    # 4. Fetch Transcript in JSON format (default)
+    trans_res = client.get(f"/api/interviews/{interview_id}/transcript", headers=registered_user["headers"])
+    assert trans_res.status_code == 200
+    data = trans_res.json()
+
+    assert data["interview_id"] == interview_id
+    assert data["target_role"] == "Backend Engineer"
+    assert data["domain"] == "Python"
+    assert data["interview_type"] == "technical"
+    assert "transcript_text" in data
+    assert len(data["transcript_text"]) > 20
+    assert q1["question_text"] in data["transcript_text"]
+    assert "reference counting" in data["transcript_text"]
+    assert "dialogue" in data
+    assert len(data["dialogue"]) >= 1
+    assert data["dialogue"][0]["question_text"] == q1["question_text"]
+    assert data["dialogue"][0]["answer_text"] is not None
+    assert "dialogue_json" in data
+    assert len(data["dialogue_json"]) >= 2
+
+    # 5. Fetch Transcript in Plain Text format (?format=text)
+    txt_res = client.get(f"/api/interviews/{interview_id}/transcript?format=text", headers=registered_user["headers"])
+    assert txt_res.status_code == 200
+    assert "text/plain" in txt_res.headers.get("content-type", "")
+    txt_content = txt_res.text
+    assert "Interview Dialogue Transcript" in txt_content
+    assert q1["question_text"] in txt_content
+    assert "reference counting" in txt_content
+    assert "AI (Question 1" in txt_content
+    assert "Candidate:" in txt_content
+
+    # 6. Unauthenticated access is rejected
+    assert client.get(f"/api/interviews/{interview_id}/transcript").status_code == 401

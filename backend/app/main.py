@@ -11,31 +11,43 @@ from backend.app.core.database import engine, Base, SessionLocal
 from backend.app.models.models import AptitudeQuestion
 from ai_engine.aptitude_agent import AptitudeAgent
 
-from backend.app.routers import auth, profile, interviews, aptitude, media
+from backend.app.routers import auth, profile, interviews, aptitude, media, analytics
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("interviewgenie.api")
 
 def seed_aptitude_questions():
-    """Seeds verified aptitude question bank if the database table is empty."""
+    """Seeds and synchronizes verified aptitude question bank into SQLite database."""
     try:
         with SessionLocal() as db:
-            count = db.query(AptitudeQuestion).count()
-            if count == 0:
-                logger.info("Seeding initial aptitude questions from verified bank...")
-                for item in AptitudeAgent.VERIFIED_APTITUDE_BANK:
+            existing_questions = {q.id: q for q in db.query(AptitudeQuestion).all()}
+            synced_count = 0
+            for item in AptitudeAgent.VERIFIED_APTITUDE_BANK:
+                q_id = item["id"]
+                options_str = json.dumps(item["options"])
+                if q_id in existing_questions:
+                    aq = existing_questions[q_id]
+                    aq.category = item["category"]
+                    aq.difficulty = item["difficulty"]
+                    aq.question = item["question"]
+                    aq.options_json = options_str
+                    aq.correct_option = item["correct_option"]
+                    aq.explanation = item["explanation"]
+                else:
                     aq = AptitudeQuestion(
-                        id=item["id"],
+                        id=q_id,
                         category=item["category"],
                         difficulty=item["difficulty"],
                         question=item["question"],
-                        options_json=json.dumps(item["options"]),
+                        options_json=options_str,
                         correct_option=item["correct_option"],
                         explanation=item["explanation"]
                     )
                     db.add(aq)
-                db.commit()
-                logger.info(f"Successfully seeded {len(AptitudeAgent.VERIFIED_APTITUDE_BANK)} aptitude questions.")
+                synced_count += 1
+            db.commit()
+            total_count = db.query(AptitudeQuestion).count()
+            logger.info(f"Successfully verified and seeded aptitude questions. Total in database: {total_count}.")
     except Exception as e:
         logger.error(f"Failed to seed aptitude questions: {e}")
 
@@ -82,6 +94,7 @@ app.include_router(profile.router, prefix=settings.API_V1_PREFIX)
 app.include_router(interviews.router, prefix=settings.API_V1_PREFIX)
 app.include_router(aptitude.router, prefix=settings.API_V1_PREFIX)
 app.include_router(media.router, prefix=settings.API_V1_PREFIX)
+app.include_router(analytics.router, prefix=settings.API_V1_PREFIX)
 
 # Root and Health Check Endpoints
 @app.get("/")

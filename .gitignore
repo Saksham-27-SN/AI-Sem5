@@ -19,3 +19,6 @@ test_reports/
 .coverage
 htmlcov/
 .pytest_cache/
+reports/*.pdf
+!reports/audit_verified_report.pdf
+

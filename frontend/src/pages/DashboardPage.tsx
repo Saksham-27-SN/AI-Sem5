@@ -1,25 +1,41 @@
 // src/pages/DashboardPage.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import type { InterviewSession } from '../types';
 import {
-  Sparkles,
+  Container,
+  SectionHeader,
+  Card,
+  Badge,
+  Button,
+  TableContainer,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  EmptyState,
+  LoadingSkeleton,
+  ErrorState,
+} from '../components/ui';
+import {
   Play,
   Video,
   Code,
   Brain,
   FileText,
-  Award,
-  TrendingUp,
   Clock,
   ArrowRight,
   ChevronRight,
-  ShieldCheck,
   CheckCircle2,
-  RefreshCw,
-  ExternalLink,
+  Sliders,
+  Layers,
+  Sparkles,
+  BarChart3,
+  Bot,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -27,20 +43,47 @@ export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [interviews, setInterviews] = useState<InterviewSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const list = await api.listInterviews();
-        setInterviews(list);
-      } catch (err) {
-        console.error('Failed to load past interviews', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
+    document.title = 'Dashboard | InterviewGenie AI';
   }, []);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (!user) {
+        setInterviews([]);
+        return;
+      }
+      const list = await api.listInterviews();
+      setInterviews(Array.isArray(list) ? list : []);
+    } catch (err: unknown) {
+      const errorObj = err as Error;
+      setError(errorObj.message || 'Unable to retrieve your interview sessions. Please retry.');
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Derived fact-based statistics from real session data
+  const totalSimulations = interviews.length;
+  const completedSessions = interviews.filter((s) => s.status === 'completed');
+  const evaluatedSessions = interviews.filter(
+    (s) => typeof s.overall_score === 'number' && !isNaN(s.overall_score)
+  );
+  const averageScore =
+    evaluatedSessions.length > 0
+      ? Math.round(
+          evaluatedSessions.reduce((acc, curr) => acc + (curr.overall_score || 0), 0) /
+            evaluatedSessions.length
+        )
+      : null;
 
   const quickLaunchers = [
     {
@@ -82,238 +125,267 @@ export const DashboardPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-gray-100 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
-      {/* Welcome Banner */}
-      <div className="relative p-6 sm:p-8 rounded-2xl glow-card overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+    <Container size="lg" className="py-8 space-y-8">
+      {/* 1. Page Header & Single Primary CTA */}
+      <SectionHeader
+        align="left"
+        badge="Multi-Agent Readiness Hub"
+        badgeVariant="blue"
+        title={`Welcome back${user?.full_name ? `, ${user.full_name}` : ''}`}
+        subtitle="Manage your mock simulation pipeline, review multi-agent evaluation rubrics, and launch focused interview tracks."
+        action={
+          <Link to="/setup">
+            <Button variant="primary" size="md" leftIcon={<Play className="w-4 h-4 fill-current" />}>
+              Start Practice
+            </Button>
+          </Link>
+        }
+      />
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 text-xs font-semibold mb-3">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Multi-Agent Readiness Hub</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-              Welcome back, {user?.full_name || 'Alex Johnson'}
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-xl">
-              Targeting <span className="text-blue-400 font-semibold">Senior Full Stack Engineer</span> at Big Tech / Tier 1 SaaS. Your overall readiness is on track!
-            </p>
-          </div>
+      {/* 2. Loading State */}
+      {loading && (
+        <div className="space-y-6">
+          <LoadingSkeleton variant="card" count={4} />
+          <LoadingSkeleton variant="table" rows={4} columns={6} />
+        </div>
+      )}
 
-          <div className="flex items-center gap-4 shrink-0">
-            {/* Readiness Circle Widget */}
-            <div className="flex items-center gap-4 bg-surface/80 p-3.5 rounded-xl border border-gray-800">
-              <div className="relative w-14 h-14 flex items-center justify-center">
-                <svg className="w-14 h-14 -rotate-90">
-                  <circle
-                    cx="28"
-                    cy="28"
-                    r="22"
-                    stroke="#1F2937"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <circle
-                    cx="28"
-                    cy="28"
-                    r="22"
-                    stroke="#10B981"
-                    strokeWidth="4"
-                    strokeDasharray="138"
-                    strokeDashoffset="16.5"
-                    strokeLinecap="round"
-                    fill="none"
-                  />
-                </svg>
-                <span className="absolute font-bold text-sm text-white">88%</span>
+      {/* 3. Error State */}
+      {!loading && error && (
+        <ErrorState
+          title="Could Not Load Dashboard Data"
+          message={error}
+          onRetry={loadData}
+          retryLabel="Retry Connection"
+        />
+      )}
+
+      {/* 4. Main Content when loaded successfully */}
+      {!loading && !error && (
+        <>
+          {/* Fact-Based Stats Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Tile 1: Real Completed Count */}
+            <Card padding="sm" className="flex flex-col justify-between">
+              <div className="flex items-center justify-between text-gray-400 mb-2">
+                <span className="text-sm font-semibold">Completed Simulations</span>
+                <CheckCircle2 className="w-5 h-5 text-blue-400" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-emerald-400">Interview Ready</p>
-                <p className="text-[11px] text-gray-400">Top 9th Percentile</p>
+                <p className="text-2xl font-extrabold text-white">{completedSessions.length}</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {totalSimulations} total sessions recorded
+                </p>
               </div>
+            </Card>
+
+            {/* Tile 2: Real Average Score or Ready to Benchmark */}
+            <Card padding="sm" className="flex flex-col justify-between">
+              <div className="flex items-center justify-between text-gray-400 mb-2">
+                <span className="text-sm font-semibold">Average Score</span>
+                <BarChart3 className="w-5 h-5 text-purple-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-extrabold text-white">
+                  {averageScore !== null ? `${averageScore}%` : '—'}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {evaluatedSessions.length > 0
+                    ? `Based on ${evaluatedSessions.length} evaluated round${evaluatedSessions.length > 1 ? 's' : ''}`
+                    : 'Awaiting first evaluated session'}
+                </p>
+              </div>
+            </Card>
+
+            {/* Tile 3: Fact-based Track Coverage */}
+            <Card padding="sm" className="flex flex-col justify-between">
+              <div className="flex items-center justify-between text-gray-400 mb-2">
+                <span className="text-sm font-semibold">Interview Tracks</span>
+                <Layers className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-extrabold text-white">4 Modules</p>
+                <p className="text-xs text-emerald-400 mt-1 font-medium">
+                  HR, Technical, Aptitude, Resume
+                </p>
+              </div>
+            </Card>
+
+            {/* Tile 4: Fact-based Autonomous Engine Status */}
+            <Card padding="sm" className="flex flex-col justify-between">
+              <div className="flex items-center justify-between text-gray-400 mb-2">
+                <span className="text-sm font-semibold">Autonomous Agents</span>
+                <Bot className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-extrabold text-white">4 Personas</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Elena, Marcus, Cipher, Athena
+                </p>
+              </div>
+            </Card>
+          </div>
+
+          {/* Quick Launch Cards */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-xl font-bold text-white tracking-tight">
+                  Interview Practice Modules
+                </h2>
+                <Badge variant="blue" size="sm">
+                  Direct Launch
+                </Badge>
+              </div>
+              <Link
+                to="/setup"
+                className="text-sm font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors duration-150"
+              >
+                <span>Custom Configurator</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
             </div>
 
-            <Link
-              to="/setup"
-              className="px-5 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2"
-            >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>New Simulation</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {quickLaunchers.map((mod) => {
+                const Icon = mod.icon;
+                return (
+                  <Card
+                    key={mod.title}
+                    variant="interactive"
+                    padding="sm"
+                    onClick={() => navigate(mod.path)}
+                    className="flex flex-col justify-between group"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <div
+                          className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${mod.color} flex items-center justify-center text-white shadow-md`}
+                        >
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <Badge variant="gray" size="sm">
+                          {mod.badge}
+                        </Badge>
+                      </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-surface border border-gray-800/80">
-          <div className="flex items-center justify-between text-gray-400 mb-2">
-            <span className="text-xs">Simulations Completed</span>
-            <CheckCircle2 className="w-4 h-4 text-blue-400" />
-          </div>
-          <p className="text-2xl font-bold text-white">14</p>
-          <span className="text-[11px] text-emerald-400 font-medium">↑ +3 this week</span>
-        </div>
-
-        <div className="p-4 rounded-xl bg-surface border border-gray-800/80">
-          <div className="flex items-center justify-between text-gray-400 mb-2">
-            <span className="text-xs">Average Score</span>
-            <Award className="w-4 h-4 text-purple-400" />
-          </div>
-          <p className="text-2xl font-bold text-white">87.2%</p>
-          <span className="text-[11px] text-emerald-400 font-medium">Strong Hire Tier</span>
-        </div>
-
-        <div className="p-4 rounded-xl bg-surface border border-gray-800/80">
-          <div className="flex items-center justify-between text-gray-400 mb-2">
-            <span className="text-xs">Top Rated Strength</span>
-            <TrendingUp className="w-4 h-4 text-emerald-400" />
-          </div>
-          <p className="text-sm font-bold text-white truncate">System Architecture</p>
-          <span className="text-[11px] text-gray-400">92% Technical Depth</span>
-        </div>
-
-        <div className="p-4 rounded-xl bg-surface border border-gray-800/80">
-          <div className="flex items-center justify-between text-gray-400 mb-2">
-            <span className="text-xs">Key Improvement Area</span>
-            <Clock className="w-4 h-4 text-amber-400" />
-          </div>
-          <p className="text-sm font-bold text-white truncate">Distributed Observability</p>
-          <span className="text-[11px] text-amber-400">Review OpenTelemetry</span>
-        </div>
-      </div>
-
-      {/* Quick Launch Cards */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <span>Interview Practice Modules</span>
-            <span className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-normal">
-              Direct Launch
-            </span>
-          </h2>
-          <Link to="/setup" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium">
-            <span>Custom Configurator</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickLaunchers.map((mod) => {
-            const Icon = mod.icon;
-            return (
-              <div
-                key={mod.title}
-                onClick={() => navigate(mod.path)}
-                className="group p-5 rounded-xl bg-surface border border-gray-800/80 hover:border-gray-700 hover:bg-surface-light transition-all duration-200 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div
-                      className={`w-10 h-10 rounded-lg bg-gradient-to-tr ${mod.color} flex items-center justify-center text-white shadow`}
-                    >
-                      <Icon className="w-5 h-5" />
+                      <h3 className="font-bold text-white text-base group-hover:text-blue-400 transition-colors duration-150">
+                        {mod.title}
+                      </h3>
+                      <p className="text-sm text-gray-300 mt-1 leading-relaxed">
+                        {mod.subtitle}
+                      </p>
                     </div>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-300">
-                      {mod.badge}
-                    </span>
-                  </div>
 
-                  <h3 className="font-bold text-white text-sm group-hover:text-blue-400 transition-colors">
-                    {mod.title}
-                  </h3>
-                  <p className="text-xs text-gray-400 mt-1">{mod.subtitle}</p>
-                </div>
+                    <div className="mt-5 pt-3 border-t border-[#1E293B] flex items-center justify-between text-xs">
+                      <span className="text-gray-400 font-medium">{mod.tag}</span>
+                      <span className="text-blue-400 font-semibold group-hover:translate-x-1 transition-transform duration-150 flex items-center gap-0.5">
+                        Start <ArrowRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
 
-                <div className="mt-5 pt-3 border-t border-gray-800/60 flex items-center justify-between text-[11px]">
-                  <span className="text-gray-400">{mod.tag}</span>
-                  <span className="text-blue-400 font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
-                    Start <ArrowRight className="w-3 h-3" />
-                  </span>
-                </div>
+          {/* Recent Interviews / Empty State Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white tracking-tight">
+                  Recent Interview Simulations
+                </h2>
+                <p className="text-sm text-gray-300 mt-0.5">
+                  Review deterministic scoring, question transcripts, and performance rubrics.
+                </p>
               </div>
-            );
-          })}
-        </div>
-      </div>
+              {interviews.length > 0 && (
+                <Link
+                  to="/history"
+                  className="text-sm font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors duration-150"
+                >
+                  <span>View All History</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              )}
+            </div>
 
-      {/* Recent Interviews Table */}
-      <div className="p-6 rounded-2xl bg-surface border border-gray-800/80">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-base font-bold text-white">Recent Interview Simulations</h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Review AI rubrics, question audio, and download evaluation PDFs.
-            </p>
+            {interviews.length === 0 ? (
+              <EmptyState
+                icon={<Sparkles className="w-6 h-6 text-blue-400" />}
+                title="No Interview Sessions Yet"
+                description="Start your first simulation to benchmark your skills with deterministic multi-agent scoring."
+                action={{
+                  label: 'Start Practice',
+                  onClick: () => navigate('/setup'),
+                  icon: <Play className="w-4 h-4 fill-current" />,
+                }}
+              />
+            ) : (
+              <TableContainer>
+                <Table>
+                  <TableHeader sticky>
+                    <TableRow>
+                      <TableHead>Role & Domain</TableHead>
+                      <TableHead>Track Type</TableHead>
+                      <TableHead>Difficulty</TableHead>
+                      <TableHead>Score</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {interviews.map((item) => (
+                      <TableRow key={item.id} hoverable striped>
+                        <TableCell>
+                          <p className="font-semibold text-white">{item.target_role}</p>
+                          <p className="text-xs text-gray-400">{item.domain}</p>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="indigo" size="sm">
+                            {item.interview_type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="capitalize text-gray-200">
+                          {item.difficulty}
+                        </TableCell>
+                        <TableCell>
+                          {typeof item.overall_score === 'number' ? (
+                            <span className="font-bold text-emerald-400">
+                              {item.overall_score}%
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">Evaluating</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={item.status === 'completed' ? 'emerald' : 'amber'}
+                            size="sm"
+                            dot
+                          >
+                            {item.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Link
+                            to={`/results?sessionId=${item.id}`}
+                            className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 font-semibold text-sm transition-colors duration-150"
+                          >
+                            <span>View Report</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
           </div>
-          <Link
-            to="/history"
-            className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1"
-          >
-            <span>View All</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        {loading ? (
-          <div className="py-12 text-center text-gray-400 text-xs">
-            <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-500 mb-2" />
-            Loading past simulation history...
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-800 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                  <th className="py-3 px-4">Role & Domain</th>
-                  <th className="py-3 px-4">Type</th>
-                  <th className="py-3 px-4">Difficulty</th>
-                  <th className="py-3 px-4">Score</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800/60 text-xs">
-                {interviews.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-800/30 transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-white">
-                      {item.target_role}
-                      <p className="text-[11px] font-normal text-gray-400">{item.domain}</p>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="capitalize px-2 py-0.5 rounded bg-gray-800 text-gray-300 font-medium text-[11px]">
-                        {item.interview_type}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 capitalize text-gray-300">{item.difficulty}</td>
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-emerald-400">
-                        {item.overall_score ? `${item.overall_score}%` : 'Evaluating'}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-950/60 text-emerald-400 border border-emerald-500/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <Link
-                        to="/results"
-                        className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 font-semibold text-xs"
-                      >
-                        <span>View Report</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
+        </>
+      )}
+    </Container>
   );
 };

@@ -162,6 +162,18 @@ InterviewGenie AI bridges these gaps by combining specialized autonomous agents,
 ## References
 
 1. L. S. Vygotsky, *Mind in Society: The Development of Higher Psychological Processes*. Harvard University Press, 1978.
-2. M. Sharma, M. Tong, T. Korbak, D. Duvenaud, A. Askell, S. R. Bowman, N. Cheng, E. Durmus, D. Ganguli, R. Greenblatt, *et al.*, "Towards understanding sycophancy in language models," *arXiv preprint arXiv:2310.13548*, 2023.
-3. L. F. Barrett, R. Adolphs, S. Marsella, A. M. Martinez, and S. D. Pollak, "Emotional expressions reconsidered: Challenges to inferring emotion from human facial movements," *Psychological Science in the Public Interest*, vol. 20, no. 1, pp. 1–68, 2019.
-4. M. Raghavan, S. Barocas, J. Kleinberg, and K. Levy, "Mitigating bias in algorithmic hiring: Evaluating claims and practices," in *Proc. of the 2020 Conference on Fairness, Accountability, and Transparency (FAccT)*, 2020, pp. 469–481.
+2. M. Sharma, M. Tong, T. Korbak, D. Duvenaud, A. Askell, S. R. Bowman, N. Cheng, E. Durmus, D. Ganguli, R. Greenblatt, *et al.*, "Towards understanding sycophancy in language models," *arXiv preprint arXiv:2310.13548*, 2023. [arXiv:2310.13548](https://arxiv.org/abs/2310.13548)
+3. L. F. Barrett, R. Adolphs, S. Marsella, A. M. Martinez, and S. D. Pollak, "Emotional expressions reconsidered: Challenges to inferring emotion from human facial movements," *Psychological Science in the Public Interest*, vol. 20, no. 1, pp. 1–68, 2019. DOI: [10.1177/1529100619832930](https://doi.org/10.1177/1529100619832930)
+4. M. Raghavan, S. Barocas, J. Kleinberg, and K. Levy, "Mitigating bias in algorithmic hiring: Evaluating claims and practices," in *Proc. of the 2020 Conference on Fairness, Accountability, and Transparency (FAccT)*, 2020, pp. 469–481. DOI: [10.1145/3351095.3372828](https://doi.org/10.1145/3351095.3372828)
+
+---
+
+## Related Project Documentation
+
+- [01_PROBLEM_STATEMENT.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/01_PROBLEM_STATEMENT.md) — Problem Formulation and Systemic Objectives
+- [02_LITERATURE_REVIEW.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/02_LITERATURE_REVIEW.md) — Theoretical Foundations & Academic Survey
+- [04_PEAS_FRAMEWORK.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/04_PEAS_FRAMEWORK.md) — Russell & Norvig PEAS Multi-Agent Specification
+- [05_MULTI_AGENT_ARCHITECTURE.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/05_MULTI_AGENT_ARCHITECTURE.md) — Architecture Diagrams, FSM & Protocols
+- [06_RESPONSIBLE_AI_AND_PRIVACY.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/06_RESPONSIBLE_AI_AND_PRIVACY.md) — Anti-Bias Architecture & GDPR Sovereignty
+- [07_EXPERIMENTAL_RESULTS_AND_EVALUATION.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/07_EXPERIMENTAL_RESULTS_AND_EVALUATION.md) — Benchmarks & Empirical Reliability
+- [08_USER_GUIDE_AND_DEMO_SCRIPT.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/08_USER_GUIDE_AND_DEMO_SCRIPT.md) — Operational Manual & Academic Viva Defense Protocol

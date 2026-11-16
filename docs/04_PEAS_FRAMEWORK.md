@@ -167,4 +167,16 @@ All inter-agent communication follows strict typed Pydantic/JSON payloads. Table
 
 ## References
 
-1. S. Russell and P. Norvig, *Artificial Intelligence: A Modern Approach*, 4th ed. Pearson, 2020, pp. 36–58.
+1. S. Russell and P. Norvig, *Artificial Intelligence: A Modern Approach*, 4th ed. Pearson, 2020, pp. 36–58. ISBN: 978-0134610993.
+
+---
+
+## Related Project Documentation
+
+- [01_PROBLEM_STATEMENT.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/01_PROBLEM_STATEMENT.md) — Problem Formulation and Systemic Objectives
+- [02_LITERATURE_REVIEW.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/02_LITERATURE_REVIEW.md) — Theoretical Foundations & Academic Survey
+- [03_RESEARCH_GAP.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/03_RESEARCH_GAP.md) — Comparative Analysis Against Existing Systems
+- [05_MULTI_AGENT_ARCHITECTURE.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/05_MULTI_AGENT_ARCHITECTURE.md) — Architecture Diagrams, FSM & Protocols
+- [06_RESPONSIBLE_AI_AND_PRIVACY.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/06_RESPONSIBLE_AI_AND_PRIVACY.md) — Anti-Bias Architecture & GDPR Sovereignty
+- [07_EXPERIMENTAL_RESULTS_AND_EVALUATION.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/07_EXPERIMENTAL_RESULTS_AND_EVALUATION.md) — Benchmarks & Empirical Reliability
+- [08_USER_GUIDE_AND_DEMO_SCRIPT.md](file:///C:/Users/saksham%20nagar/InterviewGenie-AI/docs/08_USER_GUIDE_AND_DEMO_SCRIPT.md) — Operational Manual & Academic Viva Defense Protocol

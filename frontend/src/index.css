@@ -1,36 +1,53 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
-:root {
-  color-scheme: dark;
+/* Global Base & Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
-  min-height: 100vh;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
   background-color: #0B0F19;
   color: #F3F4F6;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Link reset */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:root {
+  color-scheme: dark;
+  --bg-navy: #0B0F19;
+  --card-navy: #131B2E;
+  --border-slate: #1E293B;
+  --accent-blue: #3B82F6;
+  --accent-violet: #8B5CF6;
+}
+
 /* Custom glowing borders & gradients */
 .glow-card {
-  background: linear-gradient(135deg, rgba(31, 41, 55, 0.7) 0%, rgba(17, 24, 39, 0.8) 100%);
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background: linear-gradient(135deg, rgba(19, 27, 46, 0.95) 0%, rgba(11, 15, 25, 0.98) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
   backdrop-filter: blur(12px);
-  transition: all 0.25s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 .glow-card:hover {
-  border-color: rgba(99, 102, 241, 0.35);
-  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.25);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #F472B6 100%);
+  background: linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #818CF8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -46,10 +63,26 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1F2937;
+  background: #1E293B;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+  background: #334155;
+}
+
+/* Accessible focus outline */
+:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
