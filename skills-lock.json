@@ -7,6 +7,13 @@
       "skillPath": "fastapi-python/SKILL.md",
       "computedHash": "dcd375a6d6b3874ad5a11237399a20c851e6b221dee5dd3ad52a7d67bb3e53e8"
     },
+    "graphify": {
+      "source": "Graphify-Labs/graphify",
+      "commit": "81b1664971c9bcfa2d53c79a2ec9e50d5b30ec89",
+      "sourceType": "github",
+      "skillPath": "graphify/SKILL.md",
+      "computedHash": "7fe2e1347678fe2063617a4afa14a0b50811b4285cc3e20ec0492624854dbc5d"
+    },
     "python-patterns": {
       "source": "affaan-m/ECC",
       "sourceType": "github",

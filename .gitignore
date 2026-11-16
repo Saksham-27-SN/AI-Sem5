@@ -21,4 +21,7 @@ htmlcov/
 .pytest_cache/
 reports/*.pdf
 !reports/audit_verified_report.pdf
+graphify-out/cache/
+graphify-out/converted/
+
 
